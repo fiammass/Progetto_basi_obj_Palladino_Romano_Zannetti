@@ -43,4 +43,8 @@ public class Utente {
         return username;
     }
 
+    public List<Bacheca> getBacheche() {
+        return this.bacheche;
+    }
+
 }

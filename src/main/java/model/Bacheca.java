@@ -36,4 +36,9 @@ public class Bacheca {
     public String getTitolo() {
         return titolo;
     }
+
+    public List<ToDo> getTodos() {
+        return this.todos;
+    }
+
 }
