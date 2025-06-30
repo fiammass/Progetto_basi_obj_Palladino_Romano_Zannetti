@@ -1,98 +1,70 @@
 package model;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
-public class ToDo {
-    private String titolo;
-    private Date dataCreazione;
-    private Date dataScadenza;
-    private String descrizione;
-    private Stato stato;
-    private List<Attivita> attivitaList;
-    private List<Utente> condivisoCon;
+public class Todo {
+    private int id;
+    private String title;
+    private String description;
+    private String dueDate; // Formato "dd/MM/yyyy"
+    private String board;
+    private boolean completed;
+    private String color; // Codice esadecimale (es. "#FF0000")
+    private String imageUrl;
 
-    public ToDo(String titolo, Date dataScadenza) {
-        this.titolo = titolo;
-        this.dataCreazione = new Date();
-        this.dataScadenza = dataScadenza;
-        this.stato = Stato.NON_COMPLETATO;
-        this.attivitaList = new ArrayList<>();
-        this.condivisoCon = new ArrayList<>();
-        aggiornaStato();
+    // Costruttori
+    public Todo() {}
+
+    public Todo(String title, String description, String board) {
+        this.title = title;
+        this.description = description;
+        this.board = board;
+        this.completed = false;
     }
 
-    public void aggiungiAttivita(String nomeAttivita) {
-        attivitaList.add(new Attivita(nomeAttivita));
-        aggiornaStato();
+    // Metodi di business logic
+    public boolean isExpired() {
+        if (dueDate == null || dueDate.isEmpty()) return false;
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate due = LocalDate.parse(dueDate, formatter);
+        return LocalDate.now().isAfter(due);
     }
 
-    public void completaAttivita(String nomeAttivita) {
-        attivitaList.stream()
-                .filter(a -> a.getNome().equals(nomeAttivita))
-                .findFirst()
-                .ifPresent(Attivita::completa);
-        aggiornaStato();
-    }
+    // Getters & Setters
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public void condividiCon(Utente utente) {
-        if (!condivisoCon.contains(utente)) {
-            condivisoCon.add(utente);
-            utente.aggiungiTodoCondiviso(this);
-        }
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    private void aggiornaStato() {
-        Date oggi = new Date();
-        if (dataScadenza.before(oggi)) {
-            stato = Stato.SCADUTO;
-        } else if (attivitaList.isEmpty()) {
-            stato = Stato.NON_COMPLETATO;
-        } else if (attivitaList.stream().allMatch(a -> a.getStato() == Stato.COMPLETATO)) {
-            stato = Stato.COMPLETATO;
-        } else if (attivitaList.stream().anyMatch(a -> a.getStato() == Stato.COMPLETATO)) {
-            stato = Stato.IN_CORSO;
-        }
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public String getTitolo() {
-        return titolo;
-    }
+    public String getDueDate() { return dueDate; }
+    public void setDueDate(String dueDate) { this.dueDate = dueDate; }
 
-    public Stato getStato() {
-        return stato;
-    }
+    public String getBoard() { return board; }
+    public void setBoard(String board) { this.board = board; }
+
+    public boolean isCompleted() { return completed; }
+    public void setCompleted(boolean completed) { this.completed = completed; }
+
+    public String getColor() { return color; }
+    public void setColor(String color) { this.color = color; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     @Override
     public String toString() {
-        return titolo + " (" + stato.getDescrizione() + ") - Scadenza: " + dataScadenza;
-    }
-
-    public Date getDataCreazione() {
-        return dataCreazione;
-    }
-
-    public Date getDataScadenza() {
-        return dataScadenza;
-    }
-
-    public String getDescrizione() {
-        return descrizione;
-    }
-
-    public List<Attivita> getAttivitaList() {
-        return attivitaList;
-    }
-
-    public void mostraAttivita() {
-        if (attivitaList.isEmpty()) {
-            System.out.println("Nessuna attività presente");
-        } else {
-            System.out.println("Attività per '" + titolo + "':");
-            for (int i = 0; i < attivitaList.size(); i++) {
-                System.out.println((i+1) + ". " + attivitaList.get(i));
-            }
-        }
+        return "Todo{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", board='" + board + '\'' +
+                ", dueDate='" + dueDate + '\'' +
+                ", completed=" + completed +
+                '}';
     }
 }

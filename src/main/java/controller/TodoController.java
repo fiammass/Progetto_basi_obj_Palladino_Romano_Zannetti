@@ -1,103 +1,65 @@
 package controller;
 
-import model.*;
-import java.util.*;
-import java.util.stream.Collectors;
+import dao.TodoDAO;
+import model.Todo;
+import java.sql.SQLException;
+import java.util.List;
 
 public class TodoController {
-    private final Utente currentUser;
-    private Bacheca bachecaCorrente;
+    private final TodoDAO todoDao;
 
-    public TodoController() {
-        this.currentUser = new Utente("admin", "password");
-        this.currentUser.assegnaPermessi(new Permessi(true, true, true, true, true));
-        this.selezionaBacheca("Lavoro"); // Imposta bacheca iniziale di default
+    public TodoController(TodoDAO todoDao) {
+        this.todoDao = todoDao;
     }
 
-    // METODI PER BACHECHE
-    public void selezionaBacheca(String nomeBacheca) {
-        this.bachecaCorrente = currentUser.getBacheca(nomeBacheca);
+    // Operazioni CRUD
+    public void addTodo(Todo todo) throws SQLException {
+        if (todo.getTitle() == null || todo.getTitle().trim().isEmpty()) {
+            throw new IllegalArgumentException("Il titolo è obbligatorio");
+        }
+        todoDao.create(todo);
     }
 
-    public List<String> getNomiBacheche() {
-        return currentUser.getBacheche().stream()
-                .map(Bacheca::getTitolo)
-                .collect(Collectors.toList());
+    public void updateTodo(Todo todo) throws SQLException {
+        if (todo.getId() <= 0) {
+            throw new IllegalArgumentException("ID todo non valido");
+        }
+        todoDao.update(todo);
     }
 
-    public String getBachecaCorrenteNome() {
-        return bachecaCorrente != null ? bachecaCorrente.getTitolo() : "";
+    public void deleteTodo(int todoId) throws SQLException {
+        if (todoId <= 0) {
+            throw new IllegalArgumentException("ID todo non valido");
+        }
+        todoDao.delete(todoId);
     }
 
-    // METODI PER TODO
-    public boolean aggiungiTodo(String titolo, Date scadenza) {
-        if (bachecaCorrente == null) return false;
-
-        ToDo nuovoTodo = new ToDo(titolo, scadenza);
-        bachecaCorrente.aggiungiTodo(nuovoTodo);
-        return true;
+    // Operazioni specifiche
+    public List<Todo> getTodosByBoard(String boardName) throws SQLException {
+        return todoDao.getByBoard(boardName);
     }
 
-    public boolean rimuoviTodo(String titolo) {
-        if (bachecaCorrente == null) return false;
-
-        return bachecaCorrente.getTodos().removeIf(t -> t.getTitolo().equals(titolo));
+    public void moveTodoToBoard(int todoId, String newBoardName) throws SQLException {
+        Todo todo = todoDao.getById(todoId);
+        if (todo != null) {
+            todo.setBoard(newBoardName);
+            todoDao.update(todo);
+        }
     }
 
-    // METODI PER ATTIVITÀ
-    public boolean aggiungiAttivita(String todoTitolo, String attivitaNome) {
-        if (bachecaCorrente == null) return false;
-
-        return bachecaCorrente.getTodos().stream()
-                .filter(t -> t.getTitolo().equals(todoTitolo))
-                .findFirst()
-                .map(t -> {
-                    t.aggiungiAttivita(attivitaNome);
-                    return true;
-                })
-                .orElse(false);
+    public List<Todo> getDueToday() throws SQLException {
+        return todoDao.getDueToday();
     }
 
-    public boolean completaAttivita(String todoTitolo, String attivitaNome) {
-        if (bachecaCorrente == null) return false;
-
-        return bachecaCorrente.getTodos().stream()
-                .filter(t -> t.getTitolo().equals(todoTitolo))
-                .findFirst()
-                .map(t -> {
-                    t.completaAttivita(attivitaNome);
-                    return true;
-                })
-                .orElse(false);
+    public List<Todo> searchTodos(String query) throws SQLException {
+        return todoDao.search(query);
     }
 
-    // METODI DI RICERCA
-    public List<ToDo> getTodosInScadenza(Date dataLimite) {
-        if (bachecaCorrente == null) return Collections.emptyList();
-        return bachecaCorrente.getTodosInScadenza(dataLimite);
-    }
-
-    public List<ToDo> cercaTodo(String query) {
-        if (bachecaCorrente == null) return Collections.emptyList();
-        return bachecaCorrente.cerca(query);
-    }
-
-    public List<ToDo> getTodosBachecaCorrente() {
-        if (bachecaCorrente == null) return Collections.emptyList();
-        return new ArrayList<>(bachecaCorrente.getTodos());
-    }
-
-    // METODI PER CONDIVISIONE
-    public boolean condividiTodo(String todoTitolo, Utente altroUtente) {
-        if (bachecaCorrente == null) return false;
-
-        return bachecaCorrente.getTodos().stream()
-                .filter(t -> t.getTitolo().equals(todoTitolo))
-                .findFirst()
-                .map(t -> {
-                    t.condividiCon(altroUtente);
-                    return true;
-                })
-                .orElse(false);
+    public void toggleCompleteStatus(int todoId) throws SQLException {
+        Todo todo = todoDao.getById(todoId);
+        if (todo != null) {
+            todo.setCompleted(!todo.isCompleted());
+            todoDao.update(todo);
+        }
     }
 }

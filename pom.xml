@@ -4,15 +4,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Informazioni base del progetto -->
+    <!-- Informazioni base -->
     <groupId>com.todomanager</groupId>
     <artifactId>todo-manager</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>ToDo Manager</name>
-    <description>Applicativo per gestione ToDo ispirato a Trello</description>
+    <description>Applicativo per gestione attività con PostgreSQL</description>
 
+    <!-- Proprietà -->
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
@@ -22,14 +23,14 @@
 
     <!-- Dipendenze -->
     <dependencies>
-        <!-- PostgreSQL JDBC Driver -->
+        <!-- PostgreSQL -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>${postgresql.version}</version>
         </dependency>
 
-        <!-- Swing (incluso in Java SE) -->
+        <!-- Swing -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-swing</artifactId>
@@ -52,10 +53,10 @@
         </dependency>
     </dependencies>
 
-    <!-- Build configuration -->
+    <!-- Build -->
     <build>
         <plugins>
-            <!-- Compilazione e packaging -->
+            <!-- Compilazione -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -70,18 +71,37 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.todomanager.App</mainClass>
+                            <mainClass>App</mainClass>
                             <addClasspath>true</addClasspath>
                         </manifest>
                     </archive>
                 </configuration>
             </plugin>
 
-            <!-- Analisi qualità codice (SonarQube) -->
+            <!-- Copia le dipendenze -->
             <plugin>
-                <groupId>org.sonarsource.scanner.maven</groupId>
-                <artifactId>sonar-maven-plugin</artifactId>
-                <version>3.9.1.2184</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.4.2</version>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>App</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <!-- Formattazione codice -->
@@ -90,12 +110,19 @@
                 <artifactId>formatter-maven-plugin</artifactId>
                 <version>2.22.0</version>
                 <configuration>
-                    <configFile>${project.basedir}/config/eclipse-format.xml</configFile>
+                    <configFile>${project.basedir}/config/formatter.xml</configFile>
                 </configuration>
+            </plugin>
+
+            <!-- Analisi qualità codice -->
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>3.9.1.2184</version>
             </plugin>
         </plugins>
 
-        <!-- Filtraggio risorse (per configurazioni DB) -->
+        <!-- Filtra risorse -->
         <resources>
             <resource>
                 <directory>src/main/resources</directory>

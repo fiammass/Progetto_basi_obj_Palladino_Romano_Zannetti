@@ -2,7 +2,6 @@ package gui;
 
 import controller.TodoController;
 import gui.components.BoardPanel;
-import model.Board;
 import model.Todo;
 
 import javax.swing.*;
@@ -17,7 +16,7 @@ public class MainWindow extends JFrame {
     public MainWindow(TodoController todoController) {
         this.todoController = todoController;
         initializeUI();
-        loadBoards();
+        loadDefaultBoards();
     }
 
     private void initializeUI() {
@@ -25,111 +24,112 @@ public class MainWindow extends JFrame {
         setSize(1000, 600);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-
-        // Layout principale
         setLayout(new BorderLayout());
 
-        // Creazione toolbar
+        // Toolbar
         JToolBar toolBar = new JToolBar();
         JButton addButton = new JButton("+ Nuovo Todo");
         addButton.addActionListener(e -> showAddTodoDialog());
         toolBar.add(addButton);
 
-        // Area principale a schede
+        // TabbedPane per le bacheche
         tabbedPane = new JTabbedPane();
 
         add(toolBar, BorderLayout.NORTH);
         add(tabbedPane, BorderLayout.CENTER);
     }
 
-    private void loadBoards() {
-        try {
-            // Carica le bacheche predefinite
-            addBoard("Università");
-            addBoard("Lavoro");
-            addBoard("Tempo Libero");
+    private void loadDefaultBoards() {
+        String[] defaultBoards = {"Università", "Lavoro", "Tempo Libero"};
 
-            // Carica bacheche personalizzate se presenti
-            List<Board> customBoards = todoController.getAllBoards();
-            for (Board board : customBoards) {
-                addBoard(board.getName());
+        for (String boardName : defaultBoards) {
+            try {
+                BoardPanel panel = new BoardPanel(boardName, todoController);
+                loadTodosToPanel(panel, boardName);
+                tabbedPane.addTab(boardName, panel);
+            } catch (SQLException e) {
+                showError("Errore nel caricamento di " + boardName + ": " + e.getMessage());
             }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this,
-                    "Errore nel caricamento delle bacheche: " + e.getMessage(),
-                    "Errore", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void addBoard(String boardName) {
-        try {
-            BoardPanel panel = new BoardPanel(boardName);
-            List<Todo> todos = todoController.getTodosByBoard(boardName);
-
-            for (Todo todo : todos) {
-                panel.addTodoCard(todo);
-            }
-
-            tabbedPane.addTab(boardName, panel);
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this,
-                    "Errore nel caricamento dei todo: " + e.getMessage(),
-                    "Errore", JOptionPane.ERROR_MESSAGE);
+    private void loadTodosToPanel(BoardPanel panel, String boardName) throws SQLException {
+        List<Todo> todos = todoController.getTodosByBoard(boardName);
+        for (Todo todo : todos) {
+            panel.addTodoCard(todo);
         }
     }
 
     private void showAddTodoDialog() {
         JDialog dialog = new JDialog(this, "Nuovo Todo", true);
+        dialog.setLayout(new BorderLayout());
         dialog.setSize(400, 300);
 
-        // Implementa qui il form per aggiungere un nuovo todo
-        // Esempio:
-        JPanel panel = new JPanel(new GridLayout(0, 2));
-        panel.add(new JLabel("Titolo:"));
-        JTextField titleField = new JTextField();
-        panel.add(titleField);
+        // Form panel
+        JPanel formPanel = new JPanel(new GridLayout(5, 2, 10, 10));
+        formPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
+        JTextField titleField = new JTextField();
+        JTextArea descField = new JTextArea();
+        JTextField dueDateField = new JTextField();
+        JComboBox<String> boardCombo = new JComboBox<>(new String[]{"Università", "Lavoro", "Tempo Libero"});
+
+        formPanel.add(new JLabel("Titolo*:"));
+        formPanel.add(titleField);
+        formPanel.add(new JLabel("Descrizione:"));
+        formPanel.add(new JScrollPane(descField));
+        formPanel.add(new JLabel("Scadenza (gg/mm/aaaa):"));
+        formPanel.add(dueDateField);
+        formPanel.add(new JLabel("Bacheca:"));
+        formPanel.add(boardCombo);
+
+        // Button panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton saveButton = new JButton("Salva");
         saveButton.addActionListener(e -> {
             try {
-                Todo newTodo = new Todo();
-                newTodo.setTitle(titleField.getText());
-                newTodo.setBoard(tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()));
-
-                todoController.addTodo(newTodo);
-                refreshCurrentBoard();
-                dialog.dispose();
+                saveNewTodo(dialog, titleField, descField, dueDateField, (String) boardCombo.getSelectedItem());
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(dialog,
-                        "Errore nel salvataggio: " + ex.getMessage(),
-                        "Errore", JOptionPane.ERROR_MESSAGE);
+                showError("Errore nel salvataggio: " + ex.getMessage());
             }
         });
 
-        panel.add(saveButton);
-        dialog.add(panel);
+        buttonPanel.add(saveButton);
+
+        dialog.add(formPanel, BorderLayout.CENTER);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
         dialog.setVisible(true);
     }
 
-    private void refreshCurrentBoard() {
-        int selectedIndex = tabbedPane.getSelectedIndex();
-        String boardName = tabbedPane.getTitleAt(selectedIndex);
-        tabbedPane.remove(selectedIndex);
-        addBoard(boardName);
-        tabbedPane.setSelectedIndex(selectedIndex);
+    private void saveNewTodo(JDialog dialog, JTextField titleField, JTextArea descField,
+                             JTextField dueDateField, String boardName) throws SQLException {
+        if (titleField.getText().trim().isEmpty()) {
+            showError("Il titolo è obbligatorio");
+            return;
+        }
+
+        Todo newTodo = new Todo();
+        newTodo.setTitle(titleField.getText());
+        newTodo.setDescription(descField.getText());
+        newTodo.setDueDate(dueDateField.getText());
+        newTodo.setBoard(boardName);
+
+        todoController.addTodo(newTodo);
+        refreshBoard(boardName);
+        dialog.dispose();
     }
 
-    public static void main(String[] args) {
-        // Esempio di utilizzo (da sostituire con la tua inizializzazione)
-        SwingUtilities.invokeLater(() -> {
-            try {
-                TodoController controller = new TodoController(); // Inizializza con i tuoi DAO
-                new MainWindow(controller).setVisible(true);
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(null,
-                        "Errore nell'avvio dell'applicazione: " + e.getMessage(),
-                        "Errore Critico", JOptionPane.ERROR_MESSAGE);
+    private void refreshBoard(String boardName) {
+        for (int i = 0; i < tabbedPane.getTabCount(); i++) {
+            if (tabbedPane.getTitleAt(i).equals(boardName)) {
+                BoardPanel panel = (BoardPanel) tabbedPane.getComponentAt(i);
+                panel.refreshTodos();
+                break;
             }
-        });
+        }
+    }
+
+    private void showError(String message) {
+        JOptionPane.showMessageDialog(this, message, "Errore", JOptionPane.ERROR_MESSAGE);
     }
 }
