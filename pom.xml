@@ -71,7 +71,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>App</mainClass>
+                            <mainClass>todomanager.App</mainClass>
                             <addClasspath>true</addClasspath>
                         </manifest>
                     </archive>
@@ -89,7 +89,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>App</mainClass>
+                            <mainClass>todomanager.App</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
