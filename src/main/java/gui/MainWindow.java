@@ -1,63 +1,135 @@
 package gui;
 
 import controller.TodoController;
-import model.ToDo;
+import gui.components.BoardPanel;
+import model.Board;
+import model.Todo;
 
 import javax.swing.*;
 import java.awt.*;
+import java.sql.SQLException;
+import java.util.List;
 
 public class MainWindow extends JFrame {
-    private final TodoController controller;
-    private JList<ToDo> todoList;
-    private DefaultListModel<ToDo> listModel;
+    private final TodoController todoController;
+    private JTabbedPane tabbedPane;
 
-    public MainWindow() {
-        this.controller = new TodoController();
-        setupUI();
+    public MainWindow(TodoController todoController) {
+        this.todoController = todoController;
+        initializeUI();
+        loadBoards();
     }
 
-    private void setupUI() {
-        setTitle("Gestore Todo");
-        setSize(800, 600);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    private void initializeUI() {
+        setTitle("ToDo Manager");
+        setSize(1000, 600);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        // Layout principale
         setLayout(new BorderLayout());
 
-        // Toolbar superiore
+        // Creazione toolbar
         JToolBar toolBar = new JToolBar();
-        JButton addBtn = new JButton("Nuovo Todo");
-        addBtn.addActionListener(e -> showTodoDialog());
-        toolBar.add(addBtn);
+        JButton addButton = new JButton("+ Nuovo Todo");
+        addButton.addActionListener(e -> showAddTodoDialog());
+        toolBar.add(addButton);
 
-        // Lista Todo
-        listModel = new DefaultListModel<>();
-        refreshTodoList();
-        todoList = new JList<>(listModel);
-        todoList.setCellRenderer(new TodoRenderer());
-        todoList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        // Pannello dettagli
-        JPanel detailPanel = new JPanel(new BorderLayout());
-        detailPanel.add(new JLabel("Dettaglio Todo"), BorderLayout.NORTH);
+        // Area principale a schede
+        tabbedPane = new JTabbedPane();
 
         add(toolBar, BorderLayout.NORTH);
-        add(new JScrollPane(todoList), BorderLayout.CENTER);
-        add(detailPanel, BorderLayout.SOUTH);
+        add(tabbedPane, BorderLayout.CENTER);
     }
 
-    private void refreshTodoList() {
-        listModel.clear();
-        controller.getTodosBachecaCorrente().forEach(listModel::addElement);
+    private void loadBoards() {
+        try {
+            // Carica le bacheche predefinite
+            addBoard("Università");
+            addBoard("Lavoro");
+            addBoard("Tempo Libero");
+
+            // Carica bacheche personalizzate se presenti
+            List<Board> customBoards = todoController.getAllBoards();
+            for (Board board : customBoards) {
+                addBoard(board.getName());
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Errore nel caricamento delle bacheche: " + e.getMessage(),
+                    "Errore", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
-    private void showTodoDialog() {
-        new TodoDialog(this, controller).setVisible(true);
-        refreshTodoList();
+    private void addBoard(String boardName) {
+        try {
+            BoardPanel panel = new BoardPanel(boardName);
+            List<Todo> todos = todoController.getTodosByBoard(boardName);
+
+            for (Todo todo : todos) {
+                panel.addTodoCard(todo);
+            }
+
+            tabbedPane.addTab(boardName, panel);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Errore nel caricamento dei todo: " + e.getMessage(),
+                    "Errore", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void showAddTodoDialog() {
+        JDialog dialog = new JDialog(this, "Nuovo Todo", true);
+        dialog.setSize(400, 300);
+
+        // Implementa qui il form per aggiungere un nuovo todo
+        // Esempio:
+        JPanel panel = new JPanel(new GridLayout(0, 2));
+        panel.add(new JLabel("Titolo:"));
+        JTextField titleField = new JTextField();
+        panel.add(titleField);
+
+        JButton saveButton = new JButton("Salva");
+        saveButton.addActionListener(e -> {
+            try {
+                Todo newTodo = new Todo();
+                newTodo.setTitle(titleField.getText());
+                newTodo.setBoard(tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()));
+
+                todoController.addTodo(newTodo);
+                refreshCurrentBoard();
+                dialog.dispose();
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(dialog,
+                        "Errore nel salvataggio: " + ex.getMessage(),
+                        "Errore", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        panel.add(saveButton);
+        dialog.add(panel);
+        dialog.setVisible(true);
+    }
+
+    private void refreshCurrentBoard() {
+        int selectedIndex = tabbedPane.getSelectedIndex();
+        String boardName = tabbedPane.getTitleAt(selectedIndex);
+        tabbedPane.remove(selectedIndex);
+        addBoard(boardName);
+        tabbedPane.setSelectedIndex(selectedIndex);
     }
 
     public static void main(String[] args) {
+        // Esempio di utilizzo (da sostituire con la tua inizializzazione)
         SwingUtilities.invokeLater(() -> {
-            MainWindow window = new MainWindow();
-            window.setVisible(true);
+            try {
+                TodoController controller = new TodoController(); // Inizializza con i tuoi DAO
+                new MainWindow(controller).setVisible(true);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null,
+                        "Errore nell'avvio dell'applicazione: " + e.getMessage(),
+                        "Errore Critico", JOptionPane.ERROR_MESSAGE);
+            }
         });
     }
 }
