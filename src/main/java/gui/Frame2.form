@@ -85,7 +85,7 @@
         </constraints>
         <properties>
           <hideActionText value="false"/>
-          <text value="Back"/>
+          <text value="LogOut"/>
         </properties>
       </component>
       <vspacer id="9d7e">
