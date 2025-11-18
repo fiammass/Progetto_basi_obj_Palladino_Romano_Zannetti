@@ -38,7 +38,7 @@ public class ConnessioneDatabase {
 
     /**
      * Restituisce una connessione al DB
-     * @return la connessione al database
+     * @return la connessione al database.
      */
 
     public static Connection getConnection() throws SQLException{

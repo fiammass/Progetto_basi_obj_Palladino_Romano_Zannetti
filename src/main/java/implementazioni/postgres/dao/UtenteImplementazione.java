@@ -9,9 +9,18 @@ import model.Utente;
 import dao.UtenteDao;
 import database.ConnessioneDatabase;
 
+/**
+ * implementazione DAO per la gestione degli utenti nel DB in PostgreSQL,
+ * fronisce metodi di per aggiungere , recuperare e confrontare gli utenti dal DB
+ */
 
 public class UtenteImplementazione implements UtenteDao {
 
+
+    /**
+     * registra un nuovo utente all' interno del DB
+     * @param utente
+     */
 
     @Override
     public void salvautente(Utente utente) {
@@ -28,6 +37,13 @@ public class UtenteImplementazione implements UtenteDao {
             e.printStackTrace();
         }
     }
+
+    /**
+     * verifica che un utente si è registrato nel DB trovando una corrispondenza
+     * @param username
+     * @param password
+     * @return 1 se esiste 0 se non esiste
+     */
 
     @Override
     public boolean VerificaLogin(String username, String password) {
@@ -53,6 +69,11 @@ public class UtenteImplementazione implements UtenteDao {
         return false;
     }
 
+    /**
+     * Restituisce un utente contenuto nel database con un certo username, aggiungendolo al model
+     * @param username
+     * @return
+     */
 
     public Utente getUtentebyUsername(String username) {
         Utente utente = null;
