@@ -1,4 +1,4 @@
 package dao;
 
-public class CondivisioneDao {
+public interface CondivisioneDao {
 }

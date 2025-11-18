@@ -1,6 +1,8 @@
 package dao;
 
 import model.Bacheca;
+import java.util.List;
 
-public class BachecaDao {
+
+public interface BachecaDao {
 }

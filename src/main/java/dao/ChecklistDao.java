@@ -2,5 +2,5 @@ package dao;
 
 import model.CheckList;
 
-public class ChecklistDao {
+public interface ChecklistDao {
 }
