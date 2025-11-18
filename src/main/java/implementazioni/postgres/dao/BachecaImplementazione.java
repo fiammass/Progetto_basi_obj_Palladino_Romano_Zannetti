@@ -41,7 +41,7 @@ public class BachecaImplementazione  implements BachecaDao {
 
         stmt.executeQuery();
 
-        } catch (Exception e){
+        } catch (SQLException e){
 
         e.printStackTrace();
     }
@@ -73,14 +73,14 @@ public class BachecaImplementazione  implements BachecaDao {
                 while(rs.next()) {
                     Bacheca b =  new Bacheca(
                             rs.getString("titolo"),
-                            rs.getString("descrizione"),
+                            rs.getString("descrizione")
                             );
                     b.setIdBa(rs.getInt("id"));
                     bacheche.add(b);
 
                 }
 
-            } catch (Exception e){
+            } catch (SQLException e){
                 e.printStackTrace();
             }
 

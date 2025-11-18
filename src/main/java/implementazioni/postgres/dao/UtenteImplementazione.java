@@ -33,7 +33,7 @@ public class UtenteImplementazione implements UtenteDao {
             stmt.setString(1, utente.getlogin());
             stmt.setString(2, utente.getPassword());
 
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
@@ -63,7 +63,7 @@ public class UtenteImplementazione implements UtenteDao {
                 }
             }
         }
-        catch (Exception e){
+        catch (SQLException e){
             e.printStackTrace();
         }
         return false;
@@ -90,7 +90,7 @@ public class UtenteImplementazione implements UtenteDao {
                     utente = new Utente(rs.getString("login"), rs.getString("password"));
                 }
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
