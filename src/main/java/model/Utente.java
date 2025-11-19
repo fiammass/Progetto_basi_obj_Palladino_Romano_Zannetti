@@ -7,8 +7,7 @@ package model;
 
 public class Utente {
 
-    private Integer idUtente;
-    private String login;
+    private final String login;
     private String password;
     private Bacheca bacheca1;
     private Bacheca bacheca2;
@@ -31,9 +30,6 @@ public class Utente {
         return password;
     }
 
-    public void setLogin(String login) {
-        this.login = login;
-    }
 
     public Bacheca getBacheca1() {
         return bacheca1;
@@ -63,15 +59,14 @@ public class Utente {
         this.password = password;
     }
 
-    public Integer getIdUtente() {
-        return idUtente;
-    }
-
-    public void setIdUtente(Integer idUtente) {
-        this.idUtente = idUtente;
-    }
-
     public String getLogin() {
         return login;
+    }
+
+    public Bacheca getBachecaById(int id) {
+        if (bacheca1 != null && bacheca1.getIdBa() == id) return bacheca1;
+        if (bacheca2 != null && bacheca2.getIdBa() == id) return bacheca2;
+        if (bacheca3 != null && bacheca3.getIdBa() == id) return bacheca3;
+        return null;
     }
 }
