@@ -57,7 +57,7 @@ public class ToDo {
         this.imaginepath = imaginepath;
         this.completato = completato;
 
-        // Aggiunge se stesso alla lista della bacheca (come nel tuo esempio)
+
         if (bacheca != null) {
             bacheca.getTodos().add(this);
         }

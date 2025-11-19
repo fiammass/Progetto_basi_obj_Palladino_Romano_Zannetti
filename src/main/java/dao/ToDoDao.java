@@ -33,12 +33,12 @@ public interface ToDoDao  {
 
 
     /**
-     * Metodo per aggiornare un ToDo esistente dopo la sua modifica.
-     * @param ToDo
+     * Metodo per aggiornare un todo esistente dopo la sua modifica.
+     * @param todo
      * @param idTodo
      */
 
-    void updateToDo ( ToDo ToDo , int idTodo);
+    void updateToDo ( ToDo todo , int idTodo);
 
     /**
      * Metodo per cambaire Bacheca a un ToDo esistente nel DB.

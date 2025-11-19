@@ -1,5 +1,10 @@
 package model;
 
+/**
+ * Rappresenta un Utente del sistema.
+ * Ogni utente ha un username, una password e 3 bacheche personali nelle quali può creare, modificare ed eliminare i todo
+ */
+
 public class Utente {
 
     private Integer idUtente;
