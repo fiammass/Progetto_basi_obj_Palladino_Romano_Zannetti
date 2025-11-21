@@ -59,7 +59,7 @@ public class ToDoImplementazione implements ToDoDao {
 
             stmnt.executeUpdate();
 
-            try(ResultSet generatedKeys =stmnt.getGeneratedKeys()) {
+            try(ResultSet generatedKeys = stmnt.getGeneratedKeys()) {
                 if(generatedKeys.next()) {
                     int idGenerato = generatedKeys.getInt(1);
                     todo.setIdToDo(idGenerato);
