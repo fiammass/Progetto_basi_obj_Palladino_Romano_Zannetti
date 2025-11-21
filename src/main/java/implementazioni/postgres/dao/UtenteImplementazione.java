@@ -33,6 +33,8 @@ public class UtenteImplementazione implements UtenteDao {
             stmt.setString(1, utente.getlogin());
             stmt.setString(2, utente.getPassword());
 
+            stmt.executeUpdate();
+
         } catch (SQLException e) {
             e.printStackTrace();
         }

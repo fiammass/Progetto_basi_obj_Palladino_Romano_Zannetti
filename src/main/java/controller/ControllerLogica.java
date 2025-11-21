@@ -85,25 +85,36 @@ public class ControllerLogica {
      * @return l'utente aggiunto
      */
     public Utente aggiungiUtente(String username, String password) {
+        // 1. Crea l'utente nel DB
         Utente utente = new Utente(username, password);
         utenteDAO.salvautente(utente);
 
+        // 2. CREA LE 3 BACHECHE DI DEFAULT NEL DB (Questo mancava!)
+        // Nota: Assicurati che i titoli corrispondano a quelli che cerchi nel checkLogin
+        bachecaDAO.creaBacheca("Università", "Bacheca universitaria", username, 1);
+        bachecaDAO.creaBacheca("Lavoro", "Bacheca lavorativa", username, 2);
+        bachecaDAO.creaBacheca("Tempo Libero", "Bacheca svago", username, 3);
+
+        // 3. Ora recuperale dal DB (ora esistono, quindi la lista avrà size 3)
         List<Bacheca> bachecheDb = bachecaDAO.getBachecaByUtente(username);
-        for (Bacheca bDb : bachecheDb) {
-            switch (bDb.getTitolo()) {
-                case "Università":
-                    utente.getBacheca1().setIdBa(bDb.getIdBa());
-                    break;
-                case "Lavoro":
-                    utente.getBacheca2().setIdBa(bDb.getIdBa());
-                    break;
-                case "Tempo Libero":
-                    utente.getBacheca3().setIdBa(bDb.getIdBa());
-                    break;
-                default:
-                    break;
+
+        // Assegna le bacheche all'oggetto utente in memoria
+        if (bachecheDb != null) {
+            for (Bacheca bDb : bachecheDb) {
+                switch (bDb.getTitolo()) {
+                    case "Università":
+                        utente.setBacheca1(bDb);
+                        break;
+                    case "Lavoro":
+                        utente.setBacheca2(bDb);
+                        break;
+                    case "Tempo Libero":
+                        utente.setBacheca3(bDb);
+                        break;
+                }
             }
         }
+
         return utente;
     }
 

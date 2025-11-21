@@ -28,4 +28,7 @@ public interface BachecaDao {
 
     List<Bacheca> getBachecaByUtente(String login);
 
+    // Aggiungi questo nella tua interfaccia
+    void creaBacheca(String titolo, String descrizione, String proprietario, int numero);
+
 }
