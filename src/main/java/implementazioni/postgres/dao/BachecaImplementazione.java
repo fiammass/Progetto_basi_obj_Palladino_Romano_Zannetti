@@ -57,9 +57,9 @@ public class BachecaImplementazione  implements BachecaDao {
     @Override
     public List<Bacheca> getBachecaByUtente(String login) {
 
-        String sql = "SELECT id, titolo, descrizione, proprietario " +
+        String sql = "SELECT id, titolo, descrizione, login_utente " +
                 "FROM bacheca " +
-                "WHERE proprietario = ? " +
+                "WHERE login_utente = ? " +
                 "ORDER BY id";
 
             List<Bacheca> bacheche = new ArrayList<>();

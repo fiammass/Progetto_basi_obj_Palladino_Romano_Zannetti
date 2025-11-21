@@ -63,7 +63,6 @@ public class ToDo {
         if (bacheca != null) {
             bacheca.getTodos().add(this);
         }
-        setImaginepath(imaginepath);
     }
 
     /**
