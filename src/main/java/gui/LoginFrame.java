@@ -3,83 +3,86 @@ package gui;
 import javax.swing.*;
 import java.awt.*;
 import controller.ControllerGui;
-import java.awt.event.ActionListener;
+// Nota: Non importiamo ControllerLogica perché la View parla solo con ControllerGui
 
 public class LoginFrame extends JFrame {
 
-    // Variabili per i campi di testo
+    // Variabili per i componenti
     private JTextField userField;
     private JPasswordField passField;
     private JButton loginButton;
 
-    public <getCenterPoint> LoginFrame() {
+    // Riferimento al controller
+    private ControllerGui controller;
+
+    // IL COSTRUTTORE ORA ACCETTA ControllerGui
+    public LoginFrame(ControllerGui controller) {
+        this.controller = controller;
+
         // 1. Configurazione base della finestra
         setTitle("UniApp - Login");
         setSize(650, 450);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null); // Centra la finestra nello schermo
-        getCenterPoint GraphicsEnvironment;
 
-        // Impostiamo il layout principale a BorderLayout
+        // Layout principale
         setLayout(new BorderLayout(0, 0));
 
-        // PARTE CENTRALE (Input)
+        // --- PARTE CENTRALE (Input) ---
         JPanel inputPanel = new JPanel();
-
-        // QUI c'è la griglia: 2 righe, 2 colonne, spaziatura 5px
-        inputPanel.setLayout(new GridLayout(2, 2, 0, 0));
+        inputPanel.setLayout(new GridLayout(2, 2, 5, 5)); // Aggiunto spaziatura 5px
 
         // Creiamo i componenti
-        JLabel userLabel = new JLabel("Username:", JLabel.LEFT);
-        JLabel passLabel = new JLabel("Password:", JLabel.LEFT);
-        userField = new JTextField();       // Inizializzazione campo testo
-        passField = new JPasswordField();   // Inizializzazione campo password
+        JLabel userLabel = new JLabel("Username:", JLabel.RIGHT); // Allineato a destra per estetica
+        JLabel passLabel = new JLabel("Password:", JLabel.RIGHT);
+        userField = new JTextField();
+        passField = new JPasswordField();
 
-        // Li aggiungiamo alla griglia nell'ordine di lettura (Sinistra->Destra, Alto->Basso)
-        inputPanel.add(userLabel);  // Riga 1, Col 1
-        inputPanel.add(userField);  // Riga 1, Col 2
-        inputPanel.add(passLabel);  // Riga 2, Col 1
-        inputPanel.add(passField);  // Riga 2, Col 2
+        // Aggiunta alla griglia
+        inputPanel.add(userLabel);
+        inputPanel.add(userField);
+        inputPanel.add(passLabel);
+        inputPanel.add(passField);
 
-        // Bordo vuoto per estetica
-        inputPanel.setBorder(BorderFactory.createEmptyBorder(160, 100, 160, 100));
+        // Margini (ridotti leggermente per evitare che i campi spariscano se la finestra è piccola)
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(150, 100, 150, 100));
 
-        // Aggiungiamo il pannello al CENTRO
         add(inputPanel, BorderLayout.CENTER);
 
-
-        // PARTE IN BASSO (Bottone)
+        // --- PARTE IN BASSO (Bottone) ---
+        JPanel bottonPanel = new JPanel(); // Un pannello extra per non stretchare il bottone
         loginButton = new JButton("Login");
+        loginButton.setPreferredSize(new Dimension(100, 40)); // Dimensione fissa bottone
+        bottonPanel.add(loginButton);
 
-        // Bottone messo a SUD
-        add(loginButton, BorderLayout.SOUTH);
-    }
-    public void addListener(ControllerGui controller) {
+        add(bottonPanel, BorderLayout.SOUTH);
+
+        // --- COLLEGAMENTO AZIONE ---
+        // Impostiamo subito cosa succede quando clicchi
         loginButton.addActionListener(e -> {
-            String username = getUsername(); // Ottiene i dati tramite i getter
+            String username = getUsername();
             String password = getPassword();
-
-            // La View DELEGA la decisione al Controller
+            // Chiama il metodo del ControllerGui
             controller.handleLoginAttempt(username, password);
         });
     }
 
     /**
-     * 2. ESPONE L'INPUT: Ritorna l'Username inserito.
+     * Ritorna l'Username inserito.
      */
     public String getUsername() {
         return userField.getText();
     }
 
     /**
-     * 3. ESPONE L'INPUT: Ritorna la Password inserita.
+     * Ritorna la Password inserita.
      */
     public String getPassword() {
         return new String(passField.getPassword());
     }
 
     /**
-     * 4. FORNISCE FEEDBACK: Mostra un messaggio di errore.
+     * Mostra un messaggio di errore.
      */
     public void showErrorMessage(String message) {
         JOptionPane.showMessageDialog(this, message,

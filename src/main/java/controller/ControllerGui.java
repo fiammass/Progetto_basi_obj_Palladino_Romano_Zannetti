@@ -1,163 +1,146 @@
 package controller;
 
-import gui.DashboardFrame;
-import gui.LoginFrame;
-import gui.BoardPanel; // Importa BoardPanel
-import gui.ToDoEditorDialog; // Importa ToDoEditorDialog
+import gui.*;
 import model.Utente;
 import model.Bacheca;
-import model.ToDo; // Richiede l'import
+import model.ToDo;
 import java.awt.Color;
-import java.time.LocalDate; // Richiede l'import
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
-import javax.swing.JOptionPane;// Richiede l'import
-import gui.ToDoCardPanel;
+import java.util.Map;
+import javax.swing.JOptionPane;
 
 public class ControllerGui {
-    //riferimento al gestore della logica (model)
+
     private ControllerLogica logica;
     private LoginFrame loginFrame;
     private DashboardFrame dashboardFrame;
+
+    // FIX CRITICO: Questa mappa serve a ricordare quale ToDo corrisponde a quale Pannello Grafico
+    private Map<ToDoCardPanel, ToDo> mappaCardModel = new HashMap<>();
 
     public ControllerGui(ControllerLogica controllerLogica) {
         this.logica = controllerLogica;
     }
 
-    public void setLoginFrame(LoginFrame loginFrame) { // <--- Implementa questo metodo
-        this.loginFrame = loginFrame;
-        // Assicurati che il Controller si registri come Listener della View
-        this.loginFrame.addListener(this);
+    // --- GESTIONE ASSOCIAZIONI VIEW-MODEL ---
+    /**
+     * Da chiamare quando la View crea una Card grafica per un ToDo.
+     * Permette al controller di recuperare l'oggetto ToDo quando si clicca sulla Card.
+     */
+    public void registraAssociazione(ToDoCardPanel card, ToDo model) {
+        mappaCardModel.put(card, model);
     }
+
+    // --- SETUP FRAMES ---
+    public void setLoginFrame(LoginFrame loginFrame) {
+        this.loginFrame = loginFrame;
+        // this.loginFrame.addListener(this); // Decommenta se usi listener custom
+    }
+
     public void setDashboardFrame(DashboardFrame dashboardFrame) {
         this.dashboardFrame = dashboardFrame;
         this.dashboardFrame.addListener(this);
     }
+
+    // --- LOGIN & LOGOUT ---
     public void handleLoginAttempt(String username, String password) {
         boolean loginValido = logica.checkLogin(username, password);
         if (loginValido) {
             loginFrame.dispose();
-
             if (dashboardFrame == null) {
                 dashboardFrame = new DashboardFrame();
                 this.setDashboardFrame(dashboardFrame);
             }
+
             Utente utente = logica.getUtenteCorrente();
+            // Passiamo le bacheche alla View per visualizzarle
             dashboardFrame.displayBacheche(
                     utente.getBacheca1(),
                     utente.getBacheca2(),
                     utente.getBacheca3()
             );
-
             dashboardFrame.setVisible(true);
-
         } else {
             loginFrame.showErrorMessage("Credenziali non valide.");
         }
     }
+
     public void handleLogout() {
-        // Chiude la dashboard
-        dashboardFrame.dispose();
-        LoginFrame nuovaLogin = new LoginFrame();
-        this.setLoginFrame(nuovaLogin);
+        if(dashboardFrame != null) dashboardFrame.dispose();
+        // Ricrea il login pulito
+        ControllerLogica nuovaLogica = new ControllerLogica();
+        ControllerGui nuovoController = new ControllerGui(nuovaLogica);
+        LoginFrame nuovaLogin = new LoginFrame(nuovoController);
+        nuovoController.setLoginFrame(nuovaLogin);
         nuovaLogin.setVisible(true);
     }
-    public void handleCercaToDo(String testo) {
-        // 1. Logica di Business (cercare nel Model/Logica)
-        ToDo risultatoTodo = logica.searchToDo(testo);
 
-        // 2. Logica di Flusso (decidere cosa mostrare)
-        if (risultatoTodo != null) {
-            // Simulazione apertura SearchResultsDialog
+    // --- GESTIONE TODO ---
+
+    public void handleCercaToDo(String testo) {
+        ToDo risultato = logica.searchToDo(testo);
+        if (risultato != null) {
             JOptionPane.showMessageDialog(dashboardFrame,
-                    "Trovato ToDo: " + risultatoTodo.getTitolo() + " nella bacheca: " + risultatoTodo.getBacheca().getTitolo(),
-                    "Ricerca Riuscita",
-                    JOptionPane.INFORMATION_MESSAGE);
+                    "Trovato: " + risultato.getTitolo() + "\nBacheca: " + risultato.getBacheca().getTitolo(),
+                    "Ricerca Riuscita", JOptionPane.INFORMATION_MESSAGE);
         } else {
-            JOptionPane.showMessageDialog(dashboardFrame, "Nessun ToDo trovato con quel titolo.", "Ricerca Fallita", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(dashboardFrame, "Nessun ToDo trovato.", "Ricerca Fallita", JOptionPane.INFORMATION_MESSAGE);
         }
     }
-    public void handleScadenzeOggi() {
-        // 1. Logica di Business: ottiene i dati dal Model
-        List<ToDo> scadenze = logica.getToDoEntroData(logica.getUtenteCorrente(), LocalDate.now());
 
-        // 2. Logica di Flusso: mostra il risultato
+    public void handleScadenzeOggi() {
+        List<ToDo> scadenze = logica.getToDoEntroData(logica.getUtenteCorrente(), LocalDate.now());
         JOptionPane.showMessageDialog(dashboardFrame,
-                "Trovate " + scadenze.size() + " attività in scadenza per oggi.",
-                "Scadenze Oggi",
-                JOptionPane.INFORMATION_MESSAGE);
+                "Hai " + scadenze.size() + " attività in scadenza oggi.",
+                "Scadenze", JOptionPane.INFORMATION_MESSAGE);
     }
-    // --- GESTIONE BOARDPANEL (Aggiunta nuovo ToDo) ---
 
     public void handleAggiungiToDo(BoardPanel targetPanel) {
-        // 1. Logica: Trova il Model corrispondente al Panel
+        // Recupera il model della bacheca dal panel (La Dashboard deve saperlo fare)
         Bacheca bachecaModel = dashboardFrame.getBachecaModelForPanel(targetPanel);
 
         if (bachecaModel != null) {
-            // 2. Logica di Flusso: Apre il Dialog, passando Controller e Model
-            // USIAMO IL COSTRUTTORE CORRETTO CHE ABBIAMO DEFINITO
             new ToDoEditorDialog(dashboardFrame, this, bachecaModel).setVisible(true);
         } else {
-            // Gestione errore
-            JOptionPane.showMessageDialog(dashboardFrame, "Errore: Bacheca non mappata al Model.", "Errore", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(dashboardFrame, "Errore: Bacheca non trovata.", "Errore", JOptionPane.ERROR_MESSAGE);
         }
     }
-
-    // --- GESTIONE EDITOR DIALOG (Salvataggio nuovo ToDo) ---
 
     public void handleSalvaNuovoToDo(String titolo, String dataScadenzaStr, String descrizione,
                                      Color colore, Bacheca bachecaTarget) {
-
-        // 1. Conversione e Validazione (Parte della Logica)
         LocalDate scadenza = null;
         try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            scadenza = LocalDate.parse(dataScadenzaStr, formatter);
+            if(dataScadenzaStr != null && !dataScadenzaStr.isEmpty())
+                scadenza = LocalDate.parse(dataScadenzaStr, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(dashboardFrame, "Formato data scadenza errato (gg/MM/yyyy).", "Errore", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(dashboardFrame, "Data errata (usa gg/MM/yyyy).", "Errore", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        // 2. Chiama la Logica per salvare nel DB
-        ToDo nuovo = logica.createToDo(
-                titolo,
-                scadenza,
-                null, // link
-                descrizione,
-                null, // immagine
-                null, // immaginepath
-                colore,
-                logica.getUtenteCorrente(), // Autore
-                bachecaTarget,
-                false // Completato
-        );
+        ToDo nuovo = logica.createToDo(titolo, scadenza, null, descrizione, null, null, colore,
+                logica.getUtenteCorrente(), bachecaTarget, false);
 
-        // 3. Aggiornamento View
         if (nuovo != null) {
-            dashboardFrame.aggiornaPanel(bachecaTarget.getIdBa(),
-                    nuovo.getTitolo(), nuovo.getDatescadenza(), nuovo.getColor());
+            // Aggiorna la grafica
+            dashboardFrame.aggiornaPanel(bachecaTarget.getIdBa(), nuovo.getTitolo(), nuovo.getDatescadenza(), nuovo.getColor());
         }
     }
-    public void handleModificaToDo(ToDoCardPanel card) {
-        // 1. Logica: Trova l'oggetto Model associato alla Card
-        // ASSUNZIONE: Devi avere un modo per ottenere l'oggetto ToDo Model dall'oggetto Card View.
-        Object todoModel = null; // logica.getToDoByCard(card);
 
-        // Eseguiamo la simulazione solo se abbiamo il riferimento alla Dashboard
-        if (dashboardFrame == null) return;
+    public void handleModificaToDo(ToDoCardPanel cardPanel) {
+        // 1. Recupera il Model dalla mappa che abbiamo creato
+        ToDo todoModel = mappaCardModel.get(cardPanel);
 
         if (todoModel != null) {
-            // 2. Logica di Flusso: Apre il dialogo, passando il Controller e il Model/Card.
-            // Poiché il costruttore privato ha bisogno di essere chiamato da un costruttore PUBBLICO,
-            // useremo il costruttore di modifica che avevamo definito:
-
-            // **NOTA BENE:** Qui useremo un costruttore che CHIAMI il costruttore privato corretto.
-
-            new ToDoEditorDialog(dashboardFrame, this, card, todoModel).setVisible(true);
+            // 2. Apre l'editor popolato coi dati esistenti
+            new ToDoEditorDialog(dashboardFrame, this, cardPanel, todoModel).setVisible(true);
         } else {
-            JOptionPane.showMessageDialog(dashboardFrame, "Errore: Dati ToDo non trovati.", "Modifica", JOptionPane.ERROR_MESSAGE);
+            // Fallback se la mappa non è sincronizzata
+            JOptionPane.showMessageDialog(dashboardFrame,
+                    "Errore: Impossibile recuperare i dati del ToDo. (Hai chiamato registraAssociazione?)",
+                    "Errore Tecnico", JOptionPane.ERROR_MESSAGE);
         }
     }
-
 }
-    //riferimenti alle View principali
