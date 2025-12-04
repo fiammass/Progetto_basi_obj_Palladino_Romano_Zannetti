@@ -1,10 +1,17 @@
+package gui;
+
+
+import controller.ControllerGui;
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
+
 
 public class BoardPanel extends JPanel {
 
     private JPanel containerCards;
     private String titoloBacheca; // Salviamo il titolo in una variabile
+    private JButton btnAdd;
 
     public BoardPanel(String titolo) {
         this.titoloBacheca = titolo; // Memorizziamo il titolo
@@ -20,17 +27,29 @@ public class BoardPanel extends JPanel {
 
         add(containerCards, BorderLayout.NORTH);
 
-        JButton btnAdd = new JButton("+ Aggiungi");
-        add(btnAdd, BorderLayout.SOUTH);
-
+         this.btnAdd = new JButton("+ Aggiungi");
+        add(this.btnAdd, BorderLayout.SOUTH);
+    }
+    // FIX: Metodo addListener spostato all'esterno del costruttore
+    public void addListener(ControllerGui controller){
         btnAdd.addActionListener(e -> {
-            // 1. Trovo la finestra principale
-            JFrame dashboard = (JFrame) SwingUtilities.getWindowAncestor(this);
-
-            // 2. Apro l'editor passando "this" (cioè QUESTA bacheca specifica)
-            // Così l'editor saprà dove aggiungere il nuovo ToDo
-            new ToDoEditorDialog(dashboard, this).setVisible(true);
+            controller.handleAggiungiToDo(this);
         });
+    }
+
+    public void setTitoloBacheca(String nuovoTitolo) {
+        this.titoloBacheca = nuovoTitolo;
+        // Aggiorna la grafica del bordo
+        setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(Color.GRAY, 1),
+                titoloBacheca.toUpperCase()
+        ));
+    }
+
+    public void svuotaCard() {
+        containerCards.removeAll();
+        containerCards.revalidate();
+        containerCards.repaint();
     }
 
     // Metodo necessario per far funzionare il titolo nella finestra di dialogo

@@ -1,7 +1,10 @@
+package gui;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import controller.ControllerGui;
 
 public class ToDoCardPanel extends JPanel {
 
@@ -13,6 +16,15 @@ public class ToDoCardPanel extends JPanel {
     private String titolo;
     private String scadenza;
     private Color colore;
+
+    private ControllerGui controller;
+
+    public ToDoCardPanel(String titolo, String scadenza, Color coloreSfondo, ControllerGui controller) {
+        // ASSUNZIONE: Se il tuo Controller è già disponibile quando crei la card,
+        // è meglio passarlo al costruttore.
+        this(titolo, scadenza, coloreSfondo); // Chiama il costruttore esistente
+        this.controller = controller;
+    }
 
     public ToDoCardPanel(String titolo, String scadenza, Color coloreSfondo) {
         this.titolo = titolo;
@@ -39,16 +51,23 @@ public class ToDoCardPanel extends JPanel {
         setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
         setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // ASCOLTATORE CLICK per le card esistenti
+        // ASCOLTATORE CLICK: DELEGA al Controller
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                JFrame dashboard = (JFrame) SwingUtilities.getWindowAncestor(ToDoCardPanel.this);
-
-                // MODIFICA FONDAMENTALE: Passiamo "this" (questo oggetto pannello) all'editor
-                new ToDoEditorDialog(dashboard, ToDoCardPanel.this).setVisible(true);
+                // Il Controller deve essere responsabile di aprire l'Editor.
+                if (controller != null) {
+                    controller.handleModificaToDo(ToDoCardPanel.this); // Delega l'azione
+                } else {
+                    System.err.println("Errore: Controller non impostato sulla card.");
+                    // Logica alternativa se il controller è null
+                }
             }
         });
+    }
+
+    public void setController(ControllerGui controller) {
+        this.controller = controller;
     }
 
     // METODO: Serve all'Editor per aggiornare questa card

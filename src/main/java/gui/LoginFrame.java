@@ -1,13 +1,16 @@
+package gui;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
+import controller.ControllerGui;
 import java.awt.event.ActionListener;
 
-class LoginFrame extends JFrame {
+public class LoginFrame extends JFrame {
 
     // Variabili per i campi di testo
     private JTextField userField;
     private JPasswordField passField;
+    private JButton loginButton;
 
     public <getCenterPoint> LoginFrame() {
         // 1. Configurazione base della finestra
@@ -46,24 +49,41 @@ class LoginFrame extends JFrame {
 
 
         // PARTE IN BASSO (Bottone)
-        JButton loginButton = new JButton("Login");
-
-        loginButton.addActionListener(e -> {
-            System.out.println("Login effettuato! Passo alla Dashboard.");
-
-            // COLLEGAMENTO 2: Chiudi Login e apri Dashboard
-            this.dispose(); // "Uccide" la finestra di Login
-            new DashboardFrame().setVisible(true); // Crea e mostra la Dashboard
-        });
+        loginButton = new JButton("Login");
 
         // Bottone messo a SUD
         add(loginButton, BorderLayout.SOUTH);
     }
+    public void addListener(ControllerGui controller) {
+        loginButton.addActionListener(e -> {
+            String username = getUsername(); // Ottiene i dati tramite i getter
+            String password = getPassword();
 
-    // Metodo main per avviare
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new LoginFrame().setVisible(true);
+            // La View DELEGA la decisione al Controller
+            controller.handleLoginAttempt(username, password);
         });
+    }
+
+    /**
+     * 2. ESPONE L'INPUT: Ritorna l'Username inserito.
+     */
+    public String getUsername() {
+        return userField.getText();
+    }
+
+    /**
+     * 3. ESPONE L'INPUT: Ritorna la Password inserita.
+     */
+    public String getPassword() {
+        return new String(passField.getPassword());
+    }
+
+    /**
+     * 4. FORNISCE FEEDBACK: Mostra un messaggio di errore.
+     */
+    public void showErrorMessage(String message) {
+        JOptionPane.showMessageDialog(this, message,
+                "Errore di Login",
+                JOptionPane.ERROR_MESSAGE);
     }
 }

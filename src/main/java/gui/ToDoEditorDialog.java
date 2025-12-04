@@ -1,5 +1,10 @@
+package gui;
+
+import controller.ControllerGui;
+import model.Bacheca;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 
 public class ToDoEditorDialog extends JDialog {
 
@@ -8,12 +13,14 @@ public class ToDoEditorDialog extends JDialog {
     private JTextField txtData;
     private JCheckBox chkCompletato;
     private JButton btnColore;
+    private JButton btnSalva;
 
     // Default: Giallo Post-it
     private Color coloreSelezionato = new Color(255, 255, 153);
 
-    private BoardPanel bachecaTarget;
+    private Bacheca bachecaTargetModel;
     private ToDoCardPanel cardDaModificare;
+    private ControllerGui controller;
 
     // Palette di colori pastello per una visualizzazione migliore del testo che andiamo a scrivere sopra
     private final Color[] coloriPastello = {
@@ -43,15 +50,15 @@ public class ToDoEditorDialog extends JDialog {
     };
 
     // Costruttore NUOVO
-    public ToDoEditorDialog(JFrame parentFrame, BoardPanel bacheca) {
-        this(parentFrame);
-        this.bachecaTarget = bacheca;
-        setTitle("Nuovo ToDo in " + bacheca.getTitolo());
+    public ToDoEditorDialog(JFrame parentFrame, ControllerGui controller, Bacheca bachecaModel) {
+        this(parentFrame, controller);
+        this.bachecaTargetModel = bachecaModel;
+        setTitle("Nuovo ToDo in " + bachecaModel.getTitolo());
     }
 
     // Costruttore MODIFICA
-    public ToDoEditorDialog(JFrame parentFrame, ToDoCardPanel card) {
-        this(parentFrame);
+    public ToDoEditorDialog(JFrame parentFrame, ControllerGui controller, ToDoCardPanel card, Object todoModel) {
+        this(parentFrame, controller);
         this.cardDaModificare = card;
         setTitle("Modifica: " + card.getTitolo());
 
@@ -62,8 +69,9 @@ public class ToDoEditorDialog extends JDialog {
     }
 
     // Costruttore Base
-    private ToDoEditorDialog(JFrame parentFrame) {
+    private ToDoEditorDialog(JFrame parentFrame, ControllerGui controller) {
         super(parentFrame, "Editor ToDo", true);
+        this.controller = controller;
         setSize(400, 500);
         setLocationRelativeTo(parentFrame);
         setLayout(new BorderLayout());
@@ -98,20 +106,28 @@ public class ToDoEditorDialog extends JDialog {
         // Apre la finestra dei colori
         btnColore.addActionListener(e -> apriSelettorePastello());
 
+        formPanel.add(new JLabel("Colore Sfondo;"));
         formPanel.add(btnColore);
         add(formPanel, BorderLayout.CENTER);
 
         JPanel btnPanel = new JPanel();
-        JButton btnSalva = new JButton("Salva");
+        btnSalva = new JButton("Salva");
         JButton btnAnnulla = new JButton("Annulla");
 
         btnSalva.addActionListener(e -> {
+
+            String titolo = txtTitolo.getText();
+            String data = txtData.getText();
+            String descrizione = txtDescrizione.getText();
+
             if (cardDaModificare != null) {
-                cardDaModificare.aggiornaDati(txtTitolo.getText(), txtData.getText(), coloreSelezionato, chkCompletato.isSelected());
-            } else if (bachecaTarget != null) {
-                bachecaTarget.aggiungiCard(txtTitolo.getText(), txtData.getText(), coloreSelezionato);
+                // Logica Modifica: Controller gestisce l'aggiornamento del Model
+                // controller.handleSalvaModificaToDo(cardDaModificare, titolo, data, coloreSelezionato, chkCompletato.isSelected());
+            } else if (bachecaTargetModel != null) {
+                // Logica Nuovo: Controller gestisce la creazione del Model
+                controller.handleSalvaNuovoToDo(titolo, data, descrizione, coloreSelezionato, bachecaTargetModel);
             }
-            dispose();
+            dispose(); // La View si chiude, indipendentemente dal successo del salvataggio.
         });
 
         btnAnnulla.addActionListener(e -> dispose());
@@ -119,7 +135,6 @@ public class ToDoEditorDialog extends JDialog {
         btnPanel.add(btnAnnulla);
         add(btnPanel, BorderLayout.SOUTH);
     }
-
     // METODO PER LA GRIGLIA DI COLORI
     private void apriSelettorePastello() {
         JDialog d = new JDialog(this, "Scegli Colore", true);

@@ -1,10 +1,15 @@
+package gui;
+
+import controller.ControllerGui;
 import javax.swing.*;
+import model.Bacheca;
+import model.ToDo;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 
 public class DashboardFrame extends JFrame {
 
@@ -12,6 +17,13 @@ public class DashboardFrame extends JFrame {
     private BoardPanel pnlUniversita;
     private BoardPanel pnlLavoro;
     private BoardPanel pnlTempoLibero;
+
+    // Variabili per i bottoni che devono essere gestiti dal Controller
+    private JButton btnCerca;
+    private JButton btnScad;
+    private JButton btnLogout;
+
+    private List<Bacheca> bachequesModel; // Memorizza i riferimenti al Model
 
     public DashboardFrame() {
         setTitle("Gestore ToDo - Trello Clone");
@@ -25,9 +37,9 @@ public class DashboardFrame extends JFrame {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false); // Blocca la barra
 
-        JButton btnCerca = new JButton("Cerca ToDo");
-        JButton btnScad = new JButton("Scadenze Oggi");
-        JButton btnLogout = new JButton("Logout");
+        btnCerca = new JButton("Cerca ToDo");
+        btnScad = new JButton("Scadenze Oggi");
+        btnLogout = new JButton("Logout");
 
         // Aggiungiamo icone o spazi
         toolbar.add(btnCerca);
@@ -50,16 +62,6 @@ public class DashboardFrame extends JFrame {
         pnlLavoro = new BoardPanel("LAVORO");
         pnlTempoLibero = new BoardPanel("TEMPO LIBERO");
 
-        // DATI DI ESEMPIO (Per non vedere tutto vuoto all'avvio)
-        // NOTA: Formato necessario gg/mm/aaaa per funzionare con "Scadenze Oggi"
-        pnlUniversita.aggiungiCard("Esame Java", "28/11/2025", new Color(204, 255, 255)); // Azzurro
-        pnlUniversita.aggiungiCard("Basi di Dati", "15/12/2025", new Color(255, 255, 153)); // Giallo
-
-        pnlLavoro.aggiungiCard("Inviare Report", "28/11/2025", new Color(255, 204, 204)); // Rosso chiaro
-        pnlLavoro.aggiungiCard("Riunione Team", "Domani", new Color(204, 255, 204)); // Verde
-
-        pnlTempoLibero.aggiungiCard("Calcetto", "Venerdì", new Color(229, 204, 255)); // Viola
-
         // Aggiungiamo i pannelli alla griglia
         mainGridPanel.add(pnlUniversita);
         mainGridPanel.add(pnlLavoro);
@@ -71,66 +73,93 @@ public class DashboardFrame extends JFrame {
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
         add(scrollPane, BorderLayout.CENTER);
-
-
-        // 3. LOGICA DEI BOTTONI (EVENTI)
-        // Lista di comodo per iterare su tutte le bacheche
-        List<BoardPanel> tutteLeBacheche = Arrays.asList(pnlUniversita, pnlLavoro, pnlTempoLibero);
-
-        // AZIONE: LOGOUT
-        btnLogout.addActionListener(e -> {
-            int conferma = JOptionPane.showConfirmDialog(this, "Vuoi davvero uscire?", "Logout", JOptionPane.YES_NO_OPTION);
-            if (conferma == JOptionPane.YES_OPTION) {
-                dispose(); // Chiude Dashboard
-                new LoginFrame().setVisible(true); // Riapre Login
-            }
-        });
-
-        // AZIONE: CERCA TODO
-        btnCerca.addActionListener(e -> {
-            String testo = JOptionPane.showInputDialog(this, "Inserisci il titolo da cercare:");
-
-            if (testo != null && !testo.trim().isEmpty()) {
-                List<ToDoCardPanel> risultati = new ArrayList<>();
-
-                // Cerca in ogni bacheca
-                for (BoardPanel bacheca : tutteLeBacheche) {
-                    for (ToDoCardPanel card : bacheca.getCards()) {
-                        // Controllo Case-Insensitive (ignora maiuscole/minuscole)
-                        if (card.getTitolo().toLowerCase().contains(testo.toLowerCase())) {
-                            risultati.add(card);
-                        }
-                    }
-                }
-
-                // Apre la finestra risultati
-                new SearchResultsDialog(this, "Risultati ricerca: " + testo, risultati, "Varie").setVisible(true);
-            }
-        });
-
-        // AZIONE: SCADENZE OGGI
-        btnScad.addActionListener(e -> {
-            // Calcola la data di oggi formattata (es. "28/11/2025")
-            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            String oggi = LocalDate.now().format(dtf);
-
-            List<ToDoCardPanel> inScadenza = new ArrayList<>();
-
-            for (BoardPanel bacheca : tutteLeBacheche) {
-                for (ToDoCardPanel card : bacheca.getCards()) {
-                    // Confronta la stringa della data
-                    if (card.getScadenza().trim().equals(oggi)) {
-                        inScadenza.add(card);
-                    }
-                }
-            }
-
-            new SearchResultsDialog(this, "In scadenza Oggi (" + oggi + ")", inScadenza, "Varie").setVisible(true);
-        });
     }
 
-    // Main per testare singolarmente questa finestra
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new DashboardFrame().setVisible(true));
-    }
-}
+
+       public void addListener(ControllerGui controller) {
+           // Collega i listener dei BoardPanel al Controller
+           pnlUniversita.addListener(controller);
+           pnlLavoro.addListener(controller);
+           pnlTempoLibero.addListener(controller);
+           // Azione Logout (delegata)
+           btnLogout.addActionListener(e -> {
+               int conferma = JOptionPane.showConfirmDialog(this, "Vuoi davvero uscire?", "Logout", JOptionPane.YES_NO_OPTION);
+               if (conferma == JOptionPane.YES_OPTION) {
+                   // La view chiede al Controller di gestire l'uscita
+                   controller.handleLogout();
+               }
+           });
+           // Azione cerca Todo (delega)
+           btnCerca.addActionListener(e -> {
+               String testo = JOptionPane.showInputDialog(this, "Inserisci il titolo da cercare:");
+               if (testo != null && !testo.trim().isEmpty()) {
+                   // La View raccoglie l'input e lo passa al Controller
+                   controller.handleCercaToDo(testo);
+               }
+
+           });
+
+           // AZIONE: SCADENZE OGGI
+           btnScad.addActionListener(e -> {
+               // La view chiede al Controller di eseguire la logica delle scadenze
+               controller.handleScadenzeOggi();
+           });
+       }
+            // Metodo per il Controller: Popola la View con i dati del Model
+            public void displayBacheche(Bacheca b1, Bacheca b2, Bacheca b3) {
+                this.bachequesModel = Arrays.asList(b1, b2, b3);
+
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+                // Aggiorna i titoli dei pannelli (Logica di Visualizzazione)
+                pnlUniversita.setTitoloBacheca(b1.getTitolo());
+                pnlLavoro.setTitoloBacheca(b2.getTitolo());
+                pnlTempoLibero.setTitoloBacheca(b3.getTitolo());
+
+                pnlUniversita.svuotaCard();
+                pnlLavoro.svuotaCard();
+                pnlTempoLibero.svuotaCard();
+
+                // Popola i pannelli con i ToDo (Logica di Visualizzazione)
+                for (ToDo todo : b1.getTodos()) {
+                    // FIX: Conversione di LocalDate in String per BoardPanel.aggiungiCard
+                    String dataStr = todo.getDatescadenza() != null ? todo.getDatescadenza().format(dtf) : "N/D";
+                    pnlUniversita.aggiungiCard(todo.getTitolo(), dataStr, todo.getColor());
+                }
+                for (ToDo todo : b2.getTodos()) {
+                    String dataStr = todo.getDatescadenza() != null ? todo.getDatescadenza().format(dtf) : "N/D";
+                    pnlLavoro.aggiungiCard(todo.getTitolo(), dataStr, todo.getColor());
+                }
+                for (ToDo todo : b3.getTodos()) {
+                    String dataStr = todo.getDatescadenza() != null ? todo.getDatescadenza().format(dtf) : "N/D";
+                    pnlTempoLibero.aggiungiCard(todo.getTitolo(), dataStr, todo.getColor());
+                }
+            }
+// Metodo per il Controller: Aggiorna un pannello specifico
+            public void aggiornaPanel(int bachecaId, String titolo, LocalDate scadenza, Color colore) {
+                BoardPanel targetPanel = getPanelByModelId(bachecaId);
+                if (targetPanel != null) {
+                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                    String dataStr = scadenza != null ? scadenza.format(dtf) : "N/D";
+                    targetPanel.aggiungiCard(titolo, dataStr, colore);
+                }
+            }
+
+            // Metodo helper per mappare la View al Model (necessario in ControllerGui)
+            public Bacheca getBachecaModelForPanel(BoardPanel panel) {
+                if (bachequesModel == null) return null;
+                if (panel == pnlUniversita) return bachequesModel.get(0);
+                if (panel == pnlLavoro) return bachequesModel.get(1);
+                if (panel == pnlTempoLibero) return bachequesModel.get(2);
+                return null;
+            }
+
+            // Metodo helper per mappare l'ID del Model al Panel View
+            private BoardPanel getPanelByModelId(int id) {
+                if (bachequesModel == null || bachequesModel.size() < 3) return null;
+                if (bachequesModel.get(0).getIdBa() == id) return pnlUniversita;
+                if (bachequesModel.get(1).getIdBa() == id) return pnlLavoro;
+                if (bachequesModel.get(2).getIdBa() == id) return pnlTempoLibero;
+                return null;
+            }
+        }
