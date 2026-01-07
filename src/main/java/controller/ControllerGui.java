@@ -12,20 +12,24 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JOptionPane;
 
+
+/**
+ * Classe del controller per collegare la gui al controllerLogica
+ */
 public class ControllerGui {
 
     private ControllerLogica logica;
     private LoginFrame loginFrame;
     private DashboardFrame dashboardFrame;
 
-    // FIX CRITICO: Questa mappa serve a ricordare quale ToDo corrisponde a quale Pannello Grafico
+
     private Map<ToDoCardPanel, ToDo> mappaCardModel = new HashMap<>();
 
     public ControllerGui(ControllerLogica controllerLogica) {
         this.logica = controllerLogica;
     }
 
-    // --- GESTIONE ASSOCIAZIONI VIEW-MODEL ---
+
     /**
      * Da chiamare quando la View crea una Card grafica per un ToDo.
      * Permette al controller di recuperare l'oggetto ToDo quando si clicca sulla Card.
@@ -34,11 +38,20 @@ public class ControllerGui {
         mappaCardModel.put(card, model);
     }
 
-    // --- SETUP FRAMES ---
+
+    /**
+     * Metodo per "inizializzare" la finestra del login
+     * @param loginFrame
+     */
     public void setLoginFrame(LoginFrame loginFrame) {
         this.loginFrame = loginFrame;
         // this.loginFrame.addListener(this); // Decommenta se usi listener custom
     }
+
+    /**
+     * Metodo per "inizializzare" la finestra della dashboard
+     * @param dashboardFrame
+     */
 
     public void setDashboardFrame(DashboardFrame dashboardFrame) {
         this.dashboardFrame = dashboardFrame;
@@ -46,6 +59,12 @@ public class ControllerGui {
     }
 
     // --- LOGIN & LOGOUT ---
+
+    /**
+     * Metodo per verificare login e logout dalla bacheca
+     * @param username
+     * @param password
+     */
     public void handleLoginAttempt(String username, String password) {
         boolean loginValido = logica.checkLogin(username, password);
         if (loginValido) {
@@ -80,6 +99,11 @@ public class ControllerGui {
 
     // --- GESTIONE TODO ---
 
+    /**
+     * Metodo per cercare un ToDo
+     * @param testo
+     */
+
     public void handleCercaToDo(String testo) {
         ToDo risultato = logica.searchToDo(testo);
         if (risultato != null) {
@@ -91,12 +115,21 @@ public class ControllerGui {
         }
     }
 
+    /**
+     * Metodo per verificare quale Todo scade
+     */
+
     public void handleScadenzeOggi() {
         List<ToDo> scadenze = logica.getToDoEntroData(logica.getUtenteCorrente(), LocalDate.now());
         JOptionPane.showMessageDialog(dashboardFrame,
                 "Hai " + scadenze.size() + " attività in scadenza oggi.",
                 "Scadenze", JOptionPane.INFORMATION_MESSAGE);
     }
+
+    /**
+     * Metodo per aggiornare i ToDo
+     * @param targetPanel
+     */
 
     public void handleAggiungiToDo(BoardPanel targetPanel) {
         // Recupera il model della bacheca dal panel (La Dashboard deve saperlo fare)
@@ -108,6 +141,15 @@ public class ControllerGui {
             JOptionPane.showMessageDialog(dashboardFrame, "Errore: Bacheca non trovata.", "Errore", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    /**
+     * Metodo per salvare un nuovo ToDo nella bachehca
+     * @param titolo
+     * @param dataScadenzaStr
+     * @param descrizione
+     * @param colore
+     * @param bachecaTarget
+     */
 
     public void handleSalvaNuovoToDo(String titolo, String dataScadenzaStr, String descrizione,
                                      Color colore, Bacheca bachecaTarget) {
@@ -128,6 +170,11 @@ public class ControllerGui {
             dashboardFrame.aggiornaPanel(bachecaTarget.getIdBa(), nuovo.getTitolo(), nuovo.getDatescadenza(), nuovo.getColor());
         }
     }
+
+    /**
+     * Metodo per modificare un Todo gia presente in bacheca
+     * @param cardPanel
+     */
 
     public void handleModificaToDo(ToDoCardPanel cardPanel) {
         // 1. Recupera il Model dalla mappa che abbiamo creato

@@ -12,28 +12,38 @@ import java.util.List;
 
 public class ControllerLogica {
 
-    // Costanti per evitare "Magic Strings"
+
     public static final String BACHECA_UNI = "Università";
     public static final String BACHECA_LAVORO = "Lavoro";
     public static final String BACHECA_SVAGO = "Tempo Libero";
 
     private Utente utenteCorrente;
 
-    // DAO Interfaces
+
     private final UtenteDao utenteDAO;
     private final ToDoDao todoDAO;
     private final BachecaDao bachecaDAO;
     private final CondivisioneDAO condivisioneDAO;
     private final ChecklistDao checklistDao;
 
+
+    /**
+     * Costruttore per inizializzare la dao
+     */
     public ControllerLogica() {
-        // Inizializzazione DAO
         this.utenteDAO = new UtenteImplementazione();
         this.todoDAO = new ToDoImplementazione();
         this.bachecaDAO = new BachecaImplementazione();
         this.condivisioneDAO = new CondivisioneImplementazionePostgreDAO();
         this.checklistDao = new CheckListImplementazione();
     }
+
+    /**
+     * Metodo per verificare login di un utente.
+     * @param username
+     * @param password
+     * @return
+     */
 
     public boolean checkLogin(String username, String password) {
         if (utenteDAO.VerificaLogin(username, password)) {
@@ -54,6 +64,13 @@ public class ControllerLogica {
         return false;
     }
 
+
+    /**
+     * Metodo per aggiungere un utente.
+     * @param username
+     * @param password
+     * @return
+     */
     public Utente aggiungiUtente(String username, String password) {
         Utente utente = new Utente(username, password);
         utenteDAO.salvautente(utente);
@@ -74,6 +91,11 @@ public class ControllerLogica {
         }
         return utente;
     }
+
+    /**
+     * Metodo per caricare i dati di uno specifico Utente
+     * @param utente
+     */
 
     public void caricaDati(Utente utente) {
         // 1. Popola ToDo personali
@@ -99,6 +121,21 @@ public class ControllerLogica {
         }
     }
 
+    /**
+     * Metodo per creare un nuovo ToDO di uno specifico Utente
+     * @param titolo
+     * @param scadenza
+     * @param link
+     * @param descrizione
+     * @param immagine
+     * @param immPath
+     * @param colore
+     * @param autore
+     * @param bacheca
+     * @param completato
+     * @return
+     */
+
     public ToDo createToDo(String titolo, LocalDate scadenza, String link, String descrizione,
                            Image immagine, String immPath, Color colore,
                            Utente autore, Bacheca bacheca, Boolean completato) {
@@ -109,6 +146,18 @@ public class ControllerLogica {
         todoDAO.salvaToDo(nuovo, bacheca.getIdBa(), utenteCorrente);
         return nuovo;
     }
+
+    /**
+     * Metdo per modificare un toDo esistente di uno specifico Utente
+     * @param todo
+     * @param titolo
+     * @param desc
+     * @param link
+     * @param scadenza
+     * @param colore
+     * @param img
+     * @param imgPath
+     */
 
     public void modificaToDo(ToDo todo, String titolo, String desc, String link,
                              LocalDate scadenza, Color colore, Image img, String imgPath) {
@@ -123,12 +172,24 @@ public class ControllerLogica {
     }
 
     // --- CHECKLIST ---
+
+    /**
+     * Metodo per salvare una nuova checklist
+     * @param attivita
+     * @param todo
+     */
     public void salvaCheckListAttivita(CheckList attivita, ToDo todo) {
         checklistDao.salvaCheckListAttivita(attivita, todo.getIdToDo());
         todo.addCheckListAttivita(attivita);
         checkAndSetToDoCompletato(todo);
     }
 
+    /**
+     * Metodo per salvare un nuovo aggiornamento della checklist
+     * @param attivita
+     * @param completato
+     * @param todo
+     */
     public void updateStatoCheckList(CheckList attivita, boolean completato, ToDo todo) {
         checklistDao.updateStatoCheckList(attivita.getIdChecklist(), completato);
         attivita.setStato(completato);
@@ -141,6 +202,10 @@ public class ControllerLogica {
         checkAndSetToDoCompletato(todo);
     }
 
+    /**
+     * Metodo per verificare se la checklist è stata completata e quindi verificare se anche il toDo è stato completatop
+     * @param todo
+     */
     private void checkAndSetToDoCompletato(ToDo todo) {
         if (todo.getChecklist() == null || todo.getChecklist().isEmpty()) return;
 
@@ -157,8 +222,19 @@ public class ControllerLogica {
     }
 
     // --- UTILS & GETTERS ---
+
+    /**
+     * Metodo per verificare l utente corrente
+     * @return
+     */
     public Utente getUtenteCorrente() { return utenteCorrente; }
 
+
+    /**
+     * Metodo per cercare un Todo in una Bacheca esistente
+     * @param titolo
+     * @return
+     */
     public ToDo searchToDo(String titolo) {
         List<Bacheca> bacheche = Arrays.asList(utenteCorrente.getBacheca1(), utenteCorrente.getBacheca2(), utenteCorrente.getBacheca3());
         for (Bacheca b : bacheche) {
@@ -169,6 +245,13 @@ public class ControllerLogica {
         return null;
     }
 
+
+    /**
+     * MEtodo  per verificare se un ToDo ha superato la data di scadenza o no.
+     * @param utente
+     * @param dataLimite
+     * @return
+     */
     public List<ToDo> getToDoEntroData(Utente utente, LocalDate dataLimite) {
         List<ToDo> risultati = new ArrayList<>();
         List<Bacheca> bacheche = Arrays.asList(utente.getBacheca1(), utente.getBacheca2(), utente.getBacheca3());

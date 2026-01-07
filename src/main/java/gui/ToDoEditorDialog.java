@@ -6,6 +6,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
+/**
+ * Rappresentazione della finestra per modificare un TOdo
+ */
+
 public class ToDoEditorDialog extends JDialog {
 
     private JTextField txtTitolo;
@@ -49,14 +53,25 @@ public class ToDoEditorDialog extends JDialog {
             new Color(211, 211, 211)  // Grigio Chiaro
     };
 
-    // Costruttore NUOVO
+    /**
+     * Costruttore aggioranto della classe ToDoEditorDialog
+      * @param parentFrame
+     * @param controller
+     * @param bachecaModel
+     */
     public ToDoEditorDialog(JFrame parentFrame, ControllerGui controller, Bacheca bachecaModel) {
         this(parentFrame, controller);
         this.bachecaTargetModel = bachecaModel;
         setTitle("Nuovo ToDo in " + bachecaModel.getTitolo());
     }
 
-    // Costruttore MODIFICA
+    /**
+     * Modifica del costruttore
+      * @param parentFrame
+     * @param controller
+     * @param card
+     * @param todoModel
+     */
     public ToDoEditorDialog(JFrame parentFrame, ControllerGui controller, ToDoCardPanel card, Object todoModel) {
         this(parentFrame, controller);
         this.cardDaModificare = card;
@@ -68,7 +83,11 @@ public class ToDoEditorDialog extends JDialog {
         btnColore.setBackground(coloreSelezionato);
     }
 
-    // Costruttore Base
+    /**
+     * Costruttore della classe ToDoEditorDialog
+      * @param parentFrame
+     * @param controller
+     */
     private ToDoEditorDialog(JFrame parentFrame, ControllerGui controller) {
         super(parentFrame, "Editor ToDo", true);
         this.controller = controller;
@@ -136,6 +155,10 @@ public class ToDoEditorDialog extends JDialog {
         add(btnPanel, BorderLayout.SOUTH);
     }
     // METODO PER LA GRIGLIA DI COLORI
+
+    /**
+     * Metodo per la griglia di colori
+     */
     private void apriSelettorePastello() {
         JDialog d = new JDialog(this, "Scegli Colore", true);
         d.setSize(350, 220); // Dimensioni perfette per la griglia 4x4

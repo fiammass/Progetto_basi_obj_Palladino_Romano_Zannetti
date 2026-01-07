@@ -5,9 +5,18 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List; // IMPORTANTE
 
+/**
+ * RAppresentazione della ricerca del todo
+ */
 public class SearchResultsDialog extends JDialog {
 
-    // IL COSTRUTTORE DEVE AVERE QUESTI 4 PARAMETRI
+    /**
+     * Costruttore della calsse searchResultDialog
+      * @param parentFrame
+     * @param titoloFinestra
+     * @param risultati
+     * @param nomeBacheca
+     */
     public SearchResultsDialog(JFrame parentFrame, String titoloFinestra, List<ToDoCardPanel> risultati, String nomeBacheca) {
         super(parentFrame, titoloFinestra, true);
         setSize(600, 400);

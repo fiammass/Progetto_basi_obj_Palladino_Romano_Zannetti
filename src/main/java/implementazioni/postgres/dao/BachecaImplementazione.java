@@ -11,6 +11,10 @@ import dao.BachecaDao;
 import model.Bacheca;
 import database.ConnessioneDatabase;
 
+/**
+ *
+ */
+
 public class BachecaImplementazione implements BachecaDao {
 
     @Override

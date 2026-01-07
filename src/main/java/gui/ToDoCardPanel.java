@@ -6,6 +6,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import controller.ControllerGui;
 
+/**
+ * Rappresentazione dei Todo in una bachehca
+ */
+
 public class ToDoCardPanel extends JPanel {
 
     // Salviamo i componenti come variabili per poterli modificare dopo
@@ -26,6 +30,12 @@ public class ToDoCardPanel extends JPanel {
         this.controller = controller;
     }
 
+    /**
+     * Costruttore della classe ToDoCardPanel
+     * @param titolo
+     * @param scadenza
+     * @param coloreSfondo
+     */
     public ToDoCardPanel(String titolo, String scadenza, Color coloreSfondo) {
         this.titolo = titolo;
         this.scadenza = scadenza;
@@ -66,11 +76,24 @@ public class ToDoCardPanel extends JPanel {
         });
     }
 
+    /**
+     * Metodo per settare il controller
+     * @param controller
+     */
+
     public void setController(ControllerGui controller) {
         this.controller = controller;
     }
 
     // METODO: Serve all'Editor per aggiornare questa card
+
+    /**
+     * Metodo per aggirnare un todo visivamente
+     * @param nuovoTitolo
+     * @param nuovaScadenza
+     * @param nuovoColore
+     * @param completato
+     */
     public void aggiornaDati(String nuovoTitolo, String nuovaScadenza, Color nuovoColore, boolean completato) {
         this.titolo = nuovoTitolo;
         this.scadenza = nuovaScadenza;

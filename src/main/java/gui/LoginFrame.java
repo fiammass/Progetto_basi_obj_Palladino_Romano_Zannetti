@@ -5,6 +5,10 @@ import java.awt.*;
 import controller.ControllerGui;
 // Nota: Non importiamo ControllerLogica perché la View parla solo con ControllerGui
 
+
+/**
+ * Rappresentazioje grafica della schermata Login
+ */
 public class LoginFrame extends JFrame {
 
     // Variabili per i componenti
@@ -15,7 +19,10 @@ public class LoginFrame extends JFrame {
     // Riferimento al controller
     private ControllerGui controller;
 
-    // IL COSTRUTTORE ORA ACCETTA ControllerGui
+    /**
+     * Costruttore della classe LoginFrame
+      * @param controller
+     */
     public LoginFrame(ControllerGui controller) {
         this.controller = controller;
 
