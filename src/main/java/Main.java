@@ -3,11 +3,20 @@ import controller.ControllerGui;
 import gui.LoginFrame;
 import javax.swing.SwingUtilities;
 
+/**
+ * Classe principlae di esecuzione del programma
+ */
 public class Main {
+
+    /**
+     * Punto di inzio dell' applicazione
+     * @param args
+     */
+
     public static void main(String[] args) {
+
         SwingUtilities.invokeLater(() -> {
-            // 1. Inizializza la Logica (Il Model/DB)
-            // Non passiamo più liste vuote, il controller si arrangia con i DAO.
+
             ControllerLogica controllerLogica = new ControllerLogica();
 
             // 2. Inizializza il Controller GUI (Il "ponte" tra grafica e logica)

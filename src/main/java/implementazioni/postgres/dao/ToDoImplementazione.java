@@ -11,8 +11,19 @@ import java.io.File;
 import java.sql.*;
 import java.awt.*;
 
+
+/**
+ * implementazione DAO per la gestione dei Todo in PostgreSQL.
+ * Fornisce metodi per salavre ,popolare ,aggiornare, cambiare bachca , svuotare una bachehca , elimianre un todo , ottenere l autore.
+ */
 public class ToDoImplementazione implements ToDoDao {
 
+    /**
+     * Metodo per salvare un Todo in una bacheca
+     * @param todo
+     * @param idBacheca
+     * @param autore
+     */
     @Override
     public void salvaToDo(ToDo todo, int idBacheca, Utente autore) {
         // Schema corretto secondo foto (idba è presente)
@@ -46,6 +57,12 @@ public class ToDoImplementazione implements ToDoDao {
         }
     }
 
+    /**
+     * Metodo per popolare una bacheca di Todo
+     * @param idBacheca
+     * @param bacheca
+     * @param autore
+     */
     @Override
     public void popolabacheche(int idBacheca, Bacheca bacheca, Utente autore) {
         String sql = "SELECT idtodo, titolo, completato, url, immagine, descrizione, data_scadenza, colore, autore, idba FROM todo WHERE idba = ?";
@@ -101,6 +118,11 @@ public class ToDoImplementazione implements ToDoDao {
         }
     }
 
+    /**
+     * Metodo per aggiornare un Todo
+     * @param todo
+     * @param idTodo
+     */
     @Override
     public void updateToDo(ToDo todo, int idTodo) {
         String sql = "UPDATE todo SET titolo = ?, completato = ?, immagine = ?, descrizione = ?, data_scadenza = ?, colore = ? WHERE idtodo = ?";
@@ -123,6 +145,12 @@ public class ToDoImplementazione implements ToDoDao {
         }
     }
 
+    /**
+     * Metodo per cambaire bachehca a un Todo
+     * @param ToDo
+     * @param idBacheca
+     * @param idToDo
+     */
     @Override
     public void cambiabacheca(ToDo ToDo, int idBacheca, int idToDo) {
         String sql = "UPDATE todo SET idba = ? WHERE idtodo = ?";
@@ -136,6 +164,10 @@ public class ToDoImplementazione implements ToDoDao {
         }
     }
 
+    /**
+     * MEtodo per svuotare una bacheca
+     * @param idBacheca
+     */
     @Override
     public void svuotabahcea(int idBacheca) {
         String sql = "DELETE FROM todo WHERE idba = ?";
@@ -148,6 +180,11 @@ public class ToDoImplementazione implements ToDoDao {
         }
     }
 
+    /**
+     * Metodo per eliminare un Todo
+     * @param ToDo
+     * @param idToDo
+     */
     @Override
     public void eliminaToDo(ToDo ToDo, int idToDo) {
         String sql = "DELETE FROM todo WHERE idtodo = ?";
@@ -160,6 +197,11 @@ public class ToDoImplementazione implements ToDoDao {
         }
     }
 
+    /**
+     * Metodo per ottenere l' autore di un toDo
+     * @param idToDo
+     * @return
+     */
     @Override
     public String getautore(int idToDo) {
         String autore = null;
@@ -178,15 +220,19 @@ public class ToDoImplementazione implements ToDoDao {
         return autore;
     }
 
+    /**
+     * Metodo per popolare i todo condivisi
+     * @param utentecorrente
+     * @param bacheca
+     * @param numeroBachecaDest
+     */
     @Override
     public void popolaToDocondivisi(Utente utentecorrente, Bacheca bacheca, int numeroBachecaDest) {
-        // CORRETTO:
-        // 1. Aggiunti spazi prima di "FROM", "JOIN", "WHERE" (fondamentale!)
-        // 2. "b.autore" -> "b.proprietario" (la bacheca ha il proprietario, non l'autore)
+
         String sql = "SELECT t.* , b.proprietario as numeroAutore " +
                 "FROM todo t " +
                 "JOIN condivisi c ON t.idtodo = c.idtodo " +
-                "JOIN bacheca b ON t.idba = b.idbacheca " + // join su idbacheca
+                "JOIN bacheca b ON t.idba = b.idbacheca " +
                 "WHERE c.login_condiviso = ? AND b.numero = ?";
 
         try (Connection conn = ConnessioneDatabase.getConnection();

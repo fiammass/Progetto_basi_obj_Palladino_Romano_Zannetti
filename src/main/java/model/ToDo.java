@@ -300,23 +300,16 @@ public class ToDo {
     public String toString() {
         return getTitolo();
     }
-
-    // Metodo di controllo in model/ToDo.java
     public void verificaECompletaToDo() {
         if (this.checklist == null || this.checklist.isEmpty()) {
-            // Se non ci sono sottoattività, non facciamo nulla o consideriamo il ToDo completato
-            // Dipende dalla logica di business. Qui assumiamo che lo stato sia gestito manualmente.
             return;
         }
-
-        // Controlla se TUTTE le sottoattività sono completate
         boolean tutteCompletate = this.checklist.stream()
                 .allMatch(CheckList::getStato); // True se tutti sono true
 
         if (tutteCompletate && !this.completato) {
             this.setCompletato(true);
-            // A questo punto, il servizio dovrà chiamare ToDoDao.updateToDo()
-            // per salvare lo stato aggiornato nel database.
+
         }
     }
 }

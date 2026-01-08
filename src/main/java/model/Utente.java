@@ -14,6 +14,11 @@ public class Utente {
     private Bacheca bacheca3;
 
 
+    /**
+     * Costruttore della Classe Utente
+     * @param login
+     * @param password
+     */
     public Utente( String login ,String password){
         this.login = login;
         this.password = password;
@@ -22,43 +27,84 @@ public class Utente {
         this.bacheca3 = new Bacheca("Tempo Libero", "Bacheca dedicata al Tempo Libero");
     }
 
+    /**
+     * Restitusice il login dell utente
+     * @return
+     */
+
     public String getlogin() {
         return login;
     }
 
+    /**
+     * Restituisce la password dell utente
+     * @return
+     */
     public String getPassword() {
         return password;
     }
 
+    /**
+     * Restituisce la bacheca 1
+     * @return
+     */
 
     public Bacheca getBacheca1() {
         return bacheca1;
     }
 
+    /**
+     * Imposta la bahcecha 1
+     * @param bacheca1
+     */
     public void setBacheca1(Bacheca bacheca1) {
         this.bacheca1 = bacheca1;
     }
 
+    /**
+     * Restituisce la bacheca 3
+     * @return
+     */
     public Bacheca getBacheca3() {
         return bacheca3;
     }
 
+    /**
+     * Imposta la bahcecha 3
+     * @param bacheca3
+     */
     public void setBacheca3(Bacheca bacheca3) {
         this.bacheca3 = bacheca3;
     }
 
+    /**
+     * Restituisce la bacheca 2
+     * @return
+     */
     public Bacheca getBacheca2() {
         return bacheca2;
     }
 
+    /**
+     * Imposta la bahcecha 2
+     * @param bacheca2
+     */
     public void setBacheca2(Bacheca bacheca2) {
         this.bacheca2 = bacheca2;
     }
 
+    /**
+     * imposta la password dell utente
+     * @param password
+     */
     public void setPassword(String password) {
         this.password = password;
     }
 
+    /**
+     * restituisce il login dell utente
+     * @return
+     */
     public String getLogin() {
         return login;
     }

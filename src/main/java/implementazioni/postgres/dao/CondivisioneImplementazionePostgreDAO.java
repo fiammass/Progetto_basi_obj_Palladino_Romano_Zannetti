@@ -12,12 +12,21 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * Implementazione DAO per la gestione delle Condivisioni in PostgreSQL.
+ * Fornisce metodi per aggiungere, eliminare per utente ,recuperare l ultente condiviso , eliminare per bahchea.
+ */
 public class CondivisioneImplementazionePostgreDAO implements CondivisioneDAO {
 
     // DIPENDENZA: UtenteDAO è necessario per caricare i dettagli degli utenti condivisi
     private UtenteDao utenteDAO = new UtenteImplementazione();
 
-    // --- 1. AGGIUNGI CONDIVISIONE ---
+    /**
+     * Metodo per aggiungere una condivisione di un Todo
+     * @param idToDo ID del ToDo da condividere.
+     * @param loginDestinatario Login dell'utente che riceve la condivisione.
+     */
     @Override
     public void aggiungiCondivisione(int idToDo, String loginDestinatario) {
         String sql = "INSERT INTO condivisi (idtodo, login_condiviso) VALUES (?, ?)";
@@ -36,7 +45,11 @@ public class CondivisioneImplementazionePostgreDAO implements CondivisioneDAO {
         }
     }
 
-    // --- 2. ELIMINA CONDIVISIONE SPECIFICA ---
+    /**
+     * Metodo per eliminare una condivisone specifica per un Utente
+      * @param idToDo ID del ToDo.
+     * @param loginDestinatario Login dell'utente destinatario.
+     */
     @Override
     public void eliminaCondivisionePerUtente(int idToDo, String loginDestinatario) {
         String sql = "DELETE FROM condivisi WHERE idtodo = ? AND login_condiviso = ?";
@@ -55,7 +68,11 @@ public class CondivisioneImplementazionePostgreDAO implements CondivisioneDAO {
         }
     }
 
-    // --- 3. RECUPERA UTENTI CONDIVISI ---
+    /**
+     * Metodo per recuperare gli utenteni condivisi da uno specifico Todo
+      * @param idToDo ID del ToDo.
+     * @return
+     */
     @Override
     public List<Utente> getUtentiCondivisi(int idToDo) {
         List<Utente> utenti = new ArrayList<>();
@@ -84,8 +101,10 @@ public class CondivisioneImplementazionePostgreDAO implements CondivisioneDAO {
         return utenti;
     }
 
-    // --- 4. ELIMINA CONDIVISIONI DI UNA BACHECA ---
-    @Override
+    /**
+     * Metodo per eliminare la condivisione di una bahcheca
+     * @param idBacheca ID della Bacheca.
+     */
     public void eliminaCondivisioniDellaBacheca(int idBacheca) {
         // Query complessa che trova tutti i ToDo in una bacheca ed elimina i relativi record di condivisione
         String sql = "DELETE FROM condivisi c USING todo t WHERE c.idtodo = t.idtodo AND t.idba = ?";

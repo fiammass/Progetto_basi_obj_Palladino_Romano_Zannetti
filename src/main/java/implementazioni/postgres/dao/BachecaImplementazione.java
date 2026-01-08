@@ -12,11 +12,18 @@ import model.Bacheca;
 import database.ConnessioneDatabase;
 
 /**
- *
+ *Implementazione DAO per la gestione delle bacheche in postreSQL.
+ * Fornisce metodi per aggiornare , recuperare ,creare una bachehca dal database
  */
 
 public class BachecaImplementazione implements BachecaDao {
 
+
+    /**
+     * Metodo per l update della bacheha
+     * @param bacheca
+     * @param idBacheca
+     */
     @Override
     public void updateBacheca(Bacheca bacheca, int idBacheca) {
         // CORRETTO: "bahceca" -> "bacheca" e "id" -> "idbacheca"
@@ -36,12 +43,14 @@ public class BachecaImplementazione implements BachecaDao {
         }
     }
 
+    /**
+     * Metodo per ottenere la bahcea di un utente
+     * @param login
+     * @return
+     */
     @Override
     public List<Bacheca> getBachecaByUtente(String login) {
 
-        // PUNTO 1 E 2: Controlla bene questa stringa SQL
-        // Errore comune: Lasciare "ORDER BY id" alla fine -> DEVE ESSERE "ORDER BY idbacheca"
-        // Errore comune: Lasciare "WHERE login_utente" -> DEVE ESSERE "WHERE proprietario"
         String sql = "SELECT idbacheca, titolo, descrizione, proprietario " +
                 "FROM bacheca " +
                 "WHERE proprietario = ? " +
@@ -74,6 +83,14 @@ public class BachecaImplementazione implements BachecaDao {
 
         return bacheche;
     }
+
+    /**
+     * Metodo per creare una bahchea da un utente
+     * @param titolo
+     * @param descrizione
+     * @param proprietario
+     * @param numero
+     */
 
     @Override
     public void creaBacheca(String titolo, String descrizione, String proprietario, int numero) {
