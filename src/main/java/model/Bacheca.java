@@ -20,10 +20,11 @@ public class Bacheca {
 
     /**
      * Costruttore della classe Bacheca
+     *
      * @param titolo
      * @param descrizione
      */
-    public Bacheca(String titolo , String descrizione){
+    public Bacheca(String titolo, String descrizione) {
         ArrayList<ToDo> tmp = new ArrayList<>();
         this.titolo = titolo;
         this.descrizione = descrizione;
@@ -32,6 +33,7 @@ public class Bacheca {
 
     /**
      * Restituisce il titolo della Bacheca
+     *
      * @return
      */
     public String getTitolo() {
@@ -40,14 +42,16 @@ public class Bacheca {
 
     /**
      * Restituisce la descriszione della Bacheca
+     *
      * @return
      */
-    public String getDescrizione(){
+    public String getDescrizione() {
         return descrizione;
     }
 
     /**
      * Imposta il titolo della bacheca
+     *
      * @param titolo
      */
     public void setTitolo(String titolo) {
@@ -56,6 +60,7 @@ public class Bacheca {
 
     /**
      * Imposta la descrizione della bacheca
+     *
      * @param descrizione
      */
     public void setDescrizione(String descrizione) {
@@ -64,6 +69,7 @@ public class Bacheca {
 
     /**
      * restituisce l id della bahceca
+     *
      * @return
      */
     public Integer getIdBa() {
@@ -72,6 +78,7 @@ public class Bacheca {
 
     /**
      * Imposta l id della bahcheca
+     *
      * @param idBa
      */
     public void setIdBa(Integer idBa) {
@@ -80,6 +87,7 @@ public class Bacheca {
 
     /**
      * restituisce l array di todo
+     *
      * @return
      */
     public ArrayList<ToDo> getTodos() {
@@ -88,6 +96,7 @@ public class Bacheca {
 
     /**
      * imposta l array di todo
+     *
      * @param todos
      */
     public void setTodos(ArrayList<ToDo> todos) {
@@ -96,10 +105,14 @@ public class Bacheca {
 
     /**
      * aggiunge un todo alla bahcehca
-     * @param t
+     *
+     * @param todo
      */
-    public void addToDo(ToDo t)
-    {
-        todos.add(t);
+
+    public void addTodo(ToDo todo) {
+        if (this.todos == null) {
+            this.todos = new ArrayList<>();
+        }
+        this.todos.add(todo);
     }
 }

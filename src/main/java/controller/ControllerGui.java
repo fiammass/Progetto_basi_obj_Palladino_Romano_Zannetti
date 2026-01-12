@@ -5,82 +5,39 @@ import model.Utente;
 import model.Bacheca;
 import model.ToDo;
 import java.awt.Color;
+import java.awt.Container;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.JOptionPane;
 
-
-/**
- * Classe del controller per collegare la gui al controllerLogica
- */
 public class ControllerGui {
 
     private ControllerLogica logica;
     private LoginFrame loginFrame;
     private DashboardFrame dashboardFrame;
 
-
-    private Map<ToDoCardPanel, ToDo> mappaCardModel = new HashMap<>();
-
     public ControllerGui(ControllerLogica controllerLogica) {
         this.logica = controllerLogica;
     }
 
-
-    /**
-     * Da chiamare quando la View crea una Card grafica per un ToDo.
-     * Permette al controller di recuperare l'oggetto ToDo quando si clicca sulla Card.
-     */
-    public void registraAssociazione(ToDoCardPanel card, ToDo model) {
-        mappaCardModel.put(card, model);
-    }
-
-
-    /**
-     * Metodo per "inizializzare" la finestra del login
-     * @param loginFrame
-     */
-    public void setLoginFrame(LoginFrame loginFrame) {
-        this.loginFrame = loginFrame;
-        // this.loginFrame.addListener(this); // Decommenta se usi listener custom
-    }
-
-    /**
-     * Metodo per "inizializzare" la finestra della dashboard
-     * @param dashboardFrame
-     */
+    public void setLoginFrame(LoginFrame loginFrame) { this.loginFrame = loginFrame; }
 
     public void setDashboardFrame(DashboardFrame dashboardFrame) {
         this.dashboardFrame = dashboardFrame;
         this.dashboardFrame.addListener(this);
     }
 
-    // --- LOGIN & LOGOUT ---
-
-    /**
-     * Metodo per verificare login e logout dalla bacheca
-     * @param username
-     * @param password
-     */
+    // --- LOGIN ---
     public void handleLoginAttempt(String username, String password) {
-        boolean loginValido = logica.checkLogin(username, password);
-        if (loginValido) {
+        if (logica.checkLogin(username, password)) {
             loginFrame.dispose();
             if (dashboardFrame == null) {
                 dashboardFrame = new DashboardFrame();
-                this.setDashboardFrame(dashboardFrame);
+                setDashboardFrame(dashboardFrame);
             }
-
-            Utente utente = logica.getUtenteCorrente();
-            // Passiamo le bacheche alla View per visualizzarle
-            dashboardFrame.displayBacheche(
-                    utente.getBacheca1(),
-                    utente.getBacheca2(),
-                    utente.getBacheca3()
-            );
+            Utente u = logica.getUtenteCorrente();
+            dashboardFrame.displayBacheche(u.getBacheca1(), u.getBacheca2(), u.getBacheca3());
             dashboardFrame.setVisible(true);
         } else {
             loginFrame.showErrorMessage("Credenziali non valide.");
@@ -88,8 +45,7 @@ public class ControllerGui {
     }
 
     public void handleLogout() {
-        if(dashboardFrame != null) dashboardFrame.dispose();
-        // Ricrea il login pulito
+        if (dashboardFrame != null) dashboardFrame.dispose();
         ControllerLogica nuovaLogica = new ControllerLogica();
         ControllerGui nuovoController = new ControllerGui(nuovaLogica);
         LoginFrame nuovaLogin = new LoginFrame(nuovoController);
@@ -99,66 +55,21 @@ public class ControllerGui {
 
     // --- GESTIONE TODO ---
 
-    /**
-     * Metodo per cercare un ToDo
-     * @param testo
-     */
-
-    public void handleCercaToDo(String testo) {
-        ToDo risultato = logica.searchToDo(testo);
-        if (risultato != null) {
-            JOptionPane.showMessageDialog(dashboardFrame,
-                    "Trovato: " + risultato.getTitolo() + "\nBacheca: " + risultato.getBacheca().getTitolo(),
-                    "Ricerca Riuscita", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(dashboardFrame, "Nessun ToDo trovato.", "Ricerca Fallita", JOptionPane.INFORMATION_MESSAGE);
-        }
-    }
-
-    /**
-     * Metodo per verificare quale Todo scade
-     */
-
-    public void handleScadenzeOggi() {
-        List<ToDo> scadenze = logica.getToDoEntroData(logica.getUtenteCorrente(), LocalDate.now());
-        JOptionPane.showMessageDialog(dashboardFrame,
-                "Hai " + scadenze.size() + " attività in scadenza oggi.",
-                "Scadenze", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    /**
-     * Metodo per aggiornare i ToDo
-     * @param targetPanel
-     */
-
     public void handleAggiungiToDo(BoardPanel targetPanel) {
-        // Recupera il model della bacheca dal panel (La Dashboard deve saperlo fare)
         Bacheca bachecaModel = dashboardFrame.getBachecaModelForPanel(targetPanel);
-
         if (bachecaModel != null) {
             new ToDoEditorDialog(dashboardFrame, this, bachecaModel).setVisible(true);
-        } else {
-            JOptionPane.showMessageDialog(dashboardFrame, "Errore: Bacheca non trovata.", "Errore", JOptionPane.ERROR_MESSAGE);
         }
     }
-
-    /**
-     * Metodo per salvare un nuovo ToDo nella bachehca
-     * @param titolo
-     * @param dataScadenzaStr
-     * @param descrizione
-     * @param colore
-     * @param bachecaTarget
-     */
 
     public void handleSalvaNuovoToDo(String titolo, String dataScadenzaStr, String descrizione,
                                      Color colore, Bacheca bachecaTarget) {
         LocalDate scadenza = null;
         try {
-            if(dataScadenzaStr != null && !dataScadenzaStr.isEmpty())
+            if (dataScadenzaStr != null && !dataScadenzaStr.isEmpty())
                 scadenza = LocalDate.parse(dataScadenzaStr, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(dashboardFrame, "Data errata (usa gg/MM/yyyy).", "Errore", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(dashboardFrame, "Data errata (usa gg/MM/yyyy).");
             return;
         }
 
@@ -166,28 +77,60 @@ public class ControllerGui {
                 logica.getUtenteCorrente(), bachecaTarget, false);
 
         if (nuovo != null) {
-            // Aggiorna la grafica
-            dashboardFrame.aggiornaPanel(bachecaTarget.getIdBa(), nuovo.getTitolo(), nuovo.getDatescadenza(), nuovo.getColor());
+            dashboardFrame.aggiornaPanel(bachecaTarget.getIdBa(), nuovo);
         }
     }
-
-    /**
-     * Metodo per modificare un Todo gia presente in bacheca
-     * @param cardPanel
-     */
 
     public void handleModificaToDo(ToDoCardPanel cardPanel) {
-        // 1. Recupera il Model dalla mappa che abbiamo creato
-        ToDo todoModel = mappaCardModel.get(cardPanel);
-
+        ToDo todoModel = cardPanel.getToDo();
         if (todoModel != null) {
-            // 2. Apre l'editor popolato coi dati esistenti
             new ToDoEditorDialog(dashboardFrame, this, cardPanel, todoModel).setVisible(true);
-        } else {
-            // Fallback se la mappa non è sincronizzata
-            JOptionPane.showMessageDialog(dashboardFrame,
-                    "Errore: Impossibile recuperare i dati del ToDo. (Hai chiamato registraAssociazione?)",
-                    "Errore Tecnico", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    public void handleSalvaModifica(ToDo todo, ToDoCardPanel card, String titolo, String descrizione,
+                                    LocalDate scadenza, Color colore, boolean completato) {
+        todo.setTitolo(titolo);
+        todo.setDescrizione(descrizione);
+        todo.setDatescadenza(scadenza);
+        todo.setCompletato(completato);
+        todo.setColor(colore);
+
+        logica.modificaToDo(todo, titolo, descrizione, todo.getUrl(), scadenza, colore, null, null);
+
+        if (card != null) card.aggiornaGrafica();
+    }
+
+    // --- NUOVO METODO ELIMINA ---
+    public void handleEliminaToDo(ToDo todo, ToDoCardPanel card) {
+        // 1. Elimina dal DB e dal Model
+        logica.eliminaToDo(todo);
+
+        // 2. Aggiorna la Grafica (Rimuove il post-it)
+        if (card != null) {
+            Container parent = card.getParent(); // Prende il contenitore (BoardPanel)
+            if (parent != null) {
+                parent.remove(card);      // Rimuove la card
+                parent.revalidate();      // Ricalcola il layout
+                parent.repaint();         // Ridisegna
+            }
+        }
+    }
+    // ----------------------------
+
+    public void handleCercaToDo(String testo) {
+        ToDo risultato = logica.searchToDo(testo);
+        if (risultato != null) {
+            JOptionPane.showMessageDialog(dashboardFrame, "Trovato: " + risultato.getTitolo());
+        } else {
+            JOptionPane.showMessageDialog(dashboardFrame, "Nessun ToDo trovato.");
+        }
+    }
+
+    public void handleScadenzeOggi() {
+        List<ToDo> scadenze = logica.getToDoEntroData(logica.getUtenteCorrente(), LocalDate.now());
+        JOptionPane.showMessageDialog(dashboardFrame, "Attività in scadenza oggi: " + scadenze.size());
+    }
+
+    public void registraAssociazione(ToDoCardPanel card, ToDo model) {}
 }

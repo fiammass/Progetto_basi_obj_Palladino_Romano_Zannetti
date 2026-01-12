@@ -268,4 +268,16 @@ public class ControllerLogica {
         }
         return risultati;
     }
+
+    public void eliminaToDo(ToDo todo) {
+        if (todo != null && todo.getIdToDo() != null) {
+            // Rimuove dal DB
+            todoDAO.eliminaToDo(todo, todo.getIdToDo());
+
+            // Rimuove dalla lista in memoria della bacheca
+            if (todo.getBacheca() != null && todo.getBacheca().getTodos() != null) {
+                todo.getBacheca().getTodos().remove(todo);
+            }
+        }
+    }
 }

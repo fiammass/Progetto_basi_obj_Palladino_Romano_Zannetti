@@ -1,114 +1,89 @@
 package gui;
 
-
 import controller.ControllerGui;
+import model.ToDo;
+
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
-
-/**
- * Rappresenta la creazione della Board
- */
 public class BoardPanel extends JPanel {
 
     private JPanel containerCards;
-    private String titoloBacheca; // Salviamo il titolo in una variabile
+    private String titoloBacheca;
     private JButton btnAdd;
 
+    // Riferimento al controller da passare alle card figlie
+    private ControllerGui controllerRef;
 
-    /**
-     * Costruttore della classe BoardPanel
-     * @param titolo
-     */
     public BoardPanel(String titolo) {
-        this.titoloBacheca = titolo; // Memorizziamo il titolo
+        this.titoloBacheca = titolo;
 
         setLayout(new BorderLayout());
-        setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(Color.GRAY, 1),
-                titoloBacheca.toUpperCase()
-        ));
+        setTitoloBacheca(titolo);
 
         containerCards = new JPanel();
         containerCards.setLayout(new BoxLayout(containerCards, BoxLayout.Y_AXIS));
 
-        add(containerCards, BorderLayout.NORTH);
+        // Aggiungiamo uno ScrollPane per gestire molte card
+        JScrollPane scroll = new JScrollPane(containerCards);
+        scroll.setBorder(null);
+        scroll.getVerticalScrollBar().setUnitIncrement(10);
 
-         this.btnAdd = new JButton("+ Aggiungi");
+        add(scroll, BorderLayout.CENTER);
+
+        this.btnAdd = new JButton("+ Aggiungi");
         add(this.btnAdd, BorderLayout.SOUTH);
     }
 
-    /**
-     * Metodo per aggiungere un todo alla schermata
-     * @param controller
-     */
     public void addListener(ControllerGui controller){
+        this.controllerRef = controller; // Salviamo il controller!
         btnAdd.addActionListener(e -> {
             controller.handleAggiungiToDo(this);
         });
     }
 
-    /**
-     * Metodo per settare un titolo alla bacheca
-     * @param nuovoTitolo
-     */
-    public void setTitoloBacheca(String nuovoTitolo) {
-        this.titoloBacheca = nuovoTitolo;
-        // Aggiorna la grafica del bordo
-        setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(Color.GRAY, 1),
-                titoloBacheca.toUpperCase()
-        ));
-    }
-
-    /**
-     * Metodo per svuotare un Todo
-     */
     public void svuotaCard() {
         containerCards.removeAll();
         containerCards.revalidate();
         containerCards.repaint();
     }
 
-    // Metodo necessario per far funzionare il titolo nella finestra di dialogo
-
     /**
-     * Metodo per visualizzare il titolo
-     * @return
+     * Crea una nuova card grafica partendo dall'oggetto ToDo completo
      */
-    public String getTitolo() {
-        return titoloBacheca;
-    }
+    public void aggiungiCard(ToDo todo) {
+        if (controllerRef == null) {
+            System.err.println("WARN: Aggiunta card senza controller in BoardPanel: " + titoloBacheca);
+        }
 
-    /**
-     * Metodo per visualizzare un  todo in una bacheca
-     * @param titolo
-     * @param data
-     * @param colore
-     */
-    public void aggiungiCard(String titolo, String data, Color colore) {
-        ToDoCardPanel card = new ToDoCardPanel(titolo, data, colore);
+        // Creiamo la card passando Controller e Model
+        ToDoCardPanel card = new ToDoCardPanel(controllerRef, todo);
+
         containerCards.add(Box.createVerticalStrut(10));
         containerCards.add(card);
 
-        // Forza l'aggiornamento visivo immediato
         containerCards.revalidate();
         containerCards.repaint();
     }
 
-    // Metodo che restituisce la lista di tutte le card grafiche presenti in questa colonna
+    public void setTitoloBacheca(String nuovoTitolo) {
+        this.titoloBacheca = nuovoTitolo;
+        setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(Color.GRAY, 1),
+                titoloBacheca.toUpperCase()
+        ));
+    }
 
-    /**
-     * Metodo per restituire la lista di Todo
-     * @return
-     */
-    public java.util.List<ToDoCardPanel> getCards() {
-        java.util.List<ToDoCardPanel> lista = new java.util.ArrayList<>();
+    public String getTitolo() {
+        return titoloBacheca;
+    }
 
-        // Scorre tutti i componenti dentro il container
+    // Metodo utile per debug o gestione massiva
+    public List<ToDoCardPanel> getCards() {
+        List<ToDoCardPanel> lista = new ArrayList<>();
         for (Component c : containerCards.getComponents()) {
-            // Se il componente è una Card (e non lo spazio vuoto), lo aggiungo
             if (c instanceof ToDoCardPanel) {
                 lista.add((ToDoCardPanel) c);
             }
