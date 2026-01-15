@@ -3,6 +3,7 @@ package controller;
 import gui.*;
 import model.Utente;
 import model.Bacheca;
+import model.CheckList;
 import model.ToDo;
 import java.awt.Color;
 import java.awt.Container;
@@ -10,7 +11,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
+/**
+ * Controller GUI: Gestisce l'interazione tra le finestre grafiche e la logica di business.
+ */
 public class ControllerGui {
 
     private ControllerLogica logica;
@@ -21,6 +26,7 @@ public class ControllerGui {
         this.logica = controllerLogica;
     }
 
+    // --- SETUP FINESTRE ---
     public void setLoginFrame(LoginFrame loginFrame) { this.loginFrame = loginFrame; }
 
     public void setDashboardFrame(DashboardFrame dashboardFrame) {
@@ -28,7 +34,7 @@ public class ControllerGui {
         this.dashboardFrame.addListener(this);
     }
 
-    // --- LOGIN ---
+    // --- LOGIN & LOGOUT ---
     public void handleLoginAttempt(String username, String password) {
         if (logica.checkLogin(username, password)) {
             loginFrame.dispose();
@@ -101,27 +107,44 @@ public class ControllerGui {
         if (card != null) card.aggiornaGrafica();
     }
 
-    // --- NUOVO METODO ELIMINA ---
     public void handleEliminaToDo(ToDo todo, ToDoCardPanel card) {
-        // 1. Elimina dal DB e dal Model
         logica.eliminaToDo(todo);
-
-        // 2. Aggiorna la Grafica (Rimuove il post-it)
         if (card != null) {
-            Container parent = card.getParent(); // Prende il contenitore (BoardPanel)
+            Container parent = card.getParent();
             if (parent != null) {
-                parent.remove(card);      // Rimuove la card
-                parent.revalidate();      // Ricalcola il layout
-                parent.repaint();         // Ridisegna
+                parent.remove(card);
+                parent.revalidate();
+                parent.repaint();
             }
         }
     }
-    // ----------------------------
+
+    // --- GESTIONE CHECKLIST (NUOVO) ---
+
+    public void handleAggiungiCheckList(ToDo todo, String nomeAttivita) {
+        if (todo == null || todo.getIdToDo() == null) {
+            JOptionPane.showMessageDialog(dashboardFrame, "Devi salvare il ToDo prima di aggiungere la checklist!");
+            return;
+        }
+        CheckList nuova = new CheckList(nomeAttivita);
+        // Salva nel DB e aggiorna il model
+        logica.salvaCheckListAttivita(nuova, todo);
+    }
+
+    public void handleUpdateStatoCheckList(CheckList item, boolean completato, ToDo todo) {
+        logica.updateStatoCheckList(item, completato, todo);
+    }
+
+    public void handleEliminaCheckList(CheckList item, ToDo todo) {
+        logica.eliminaCheckListAttivita(item, todo);
+    }
+
+    // --- UTILITY ---
 
     public void handleCercaToDo(String testo) {
         ToDo risultato = logica.searchToDo(testo);
         if (risultato != null) {
-            JOptionPane.showMessageDialog(dashboardFrame, "Trovato: " + risultato.getTitolo());
+            JOptionPane.showMessageDialog(dashboardFrame, "Trovato: " + risultato.getTitolo() + " in " + risultato.getBacheca().getTitolo());
         } else {
             JOptionPane.showMessageDialog(dashboardFrame, "Nessun ToDo trovato.");
         }

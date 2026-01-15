@@ -21,14 +21,14 @@ public interface BachecaDao {
     void updateBacheca (Bacheca bacheca, int idBacheca);
 
     /**
-     * Restituisce le Bacheche di un Utente dal suo
+     * Restituisce le Bacheche di un Utente dal suo login (username)
      * @param login
      * @return
      */
 
     List<Bacheca> getBachecaByUtente(String login);
 
-    // Aggiungi questo nella tua interfaccia
+
     void creaBacheca(String titolo, String descrizione, String proprietario, int numero);
 
 }

@@ -8,37 +8,28 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Implementazione DAO per la gestione delle CheckList (sottoattività) in PostgreSQL.
- * Assumiamo che la tabella DB sia: checklist(idchecklist, nome, stato, idtodo)
- */
 public class CheckListImplementazione implements ChecklistDao {
-
-
-    /**
-     * Metodo che salva la checklist.
-     * @param attivita L'attività CheckList da salvare.
-     * @param idToDo L'ID del ToDo a cui è associata l'attività.
-     */
 
     @Override
     public void salvaCheckListAttivita(CheckList attivita, int idToDo) {
-
-        String sql = "INSERT INTO checklist (nome, stato, idtodo) VALUES (?, ?, ?)";
+        // CORREZIONE: Usiamo RETURNING per farci dare l'ID dal database
+        String sql = "INSERT INTO checklist (nome, stato, idtodo) VALUES (?, ?, ?) RETURNING idchecklist";
 
         try (Connection conn = ConnessioneDatabase.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, attivita.getNome());
             stmt.setBoolean(2, attivita.getStato());
             stmt.setInt(3, idToDo);
 
-            stmt.executeUpdate();
-
-            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    attivita.setIdChecklist(generatedKeys.getInt(1));
+            // Usiamo executeQuery perché ci aspettiamo un risultato (l'ID)
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    // Recuperiamo l'ID (colonna 1)
+                    int idGenerato = rs.getInt(1);
+                    attivita.setIdChecklist(idGenerato);
                     attivita.setIdToDo(idToDo);
+                    System.out.println("DEBUG: Checklist salvata. ID assegnato: " + idGenerato);
                 }
             }
 
@@ -48,17 +39,11 @@ public class CheckListImplementazione implements ChecklistDao {
         }
     }
 
-    /**
-     * Metodo che restituisce una checkilst all interno del todo.
-     * @param idToDo L'ID del ToDo.
-     * @return
-     */
-
     @Override
     public List<CheckList> getCheckListByToDoId(int idToDo) {
         List<CheckList> lista = new ArrayList<>();
-
-        String sql = "SELECT idchecklist, nome, stato FROM checklist WHERE idtodo = ?";
+        // Verifica se nel tuo DB la colonna si chiama idchecklist o id_checklist
+        String sql = "SELECT idchecklist, nome, stato FROM checklist WHERE idtodo = ? ORDER BY idchecklist";
 
         try (Connection conn = ConnessioneDatabase.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -67,7 +52,6 @@ public class CheckListImplementazione implements ChecklistDao {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-
                     CheckList cl = new CheckList(
                             rs.getString("nome"),
                             rs.getBoolean("stato")
@@ -83,16 +67,8 @@ public class CheckListImplementazione implements ChecklistDao {
         return lista;
     }
 
-
-    /**
-     * Metodo che aggiorna la checklist in basse al suo stato.
-     * @param idCheckList L'ID dell'attività CheckList.
-     * @param completato Il nuovo stato.
-     */
-
     @Override
     public void updateStatoCheckList(int idCheckList, boolean completato) {
-
         String sql = "UPDATE checklist SET stato = ? WHERE idchecklist = ?";
 
         try (Connection conn = ConnessioneDatabase.getConnection();
@@ -100,7 +76,6 @@ public class CheckListImplementazione implements ChecklistDao {
 
             stmt.setBoolean(1, completato);
             stmt.setInt(2, idCheckList);
-
             stmt.executeUpdate();
 
         } catch (SQLException e) {
@@ -108,11 +83,6 @@ public class CheckListImplementazione implements ChecklistDao {
             e.printStackTrace();
         }
     }
-
-    /**
-     * metodo che elimina una checklist una colta completata.
-     * @param idCheckList L'ID dell'attività CheckList da eliminare.
-     */
 
     @Override
     public void eliminaCheckListAttivita(int idCheckList) {

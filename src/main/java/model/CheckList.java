@@ -1,96 +1,106 @@
 package model;
 
 /**
- * Rappresenta una singola attività da eseguire all'interno della CheckList di un ToDo.
+ * Rappresenta una singola voce (sottoattività) all'interno di una CheckList associata a un ToDo.
+ * Ogni attività ha un nome e uno stato (completato o non completato).
  */
 public class CheckList {
 
     private Integer idChecklist;
-    private String nome;        // Corrisponde alla colonna DB 'nome'
-    private Boolean stato;      // Corrisponde alla colonna DB 'stato'
-    private Integer idToDo;     // Foreign Key per collegarsi al ToDo padre
+    private String nome;
+    private Boolean stato;      // true = completato, false = non completato
+    private Integer idToDo;     // Riferimento al ToDo padre
 
     /**
-     * Costruttore per caricare un'attività CheckList esistente dal database.
-     * @param nome Nome dell'attività.
-     * @param stato Stato di completamento.
+     * Costruttore completo per oggetti recuperati dal Database.
+     *
+     * @param nome  Il testo dell'attività.
+     * @param stato Lo stato di completamento.
      */
-    public CheckList(String nome, Boolean stato){
+    public CheckList(String nome, Boolean stato) {
         this.nome = nome;
         this.stato = stato;
     }
 
     /**
-     * Costruttore per creare una nuova attività (di default non completata).
-     * @param nome Nome dell'attività.
+     * Costruttore per nuove attività.
+     * Lo stato viene impostato di default a false (non completato).
+     *
+     * @param nome Il testo dell'attività.
      */
-    public CheckList(String nome){
+    public CheckList(String nome) {
         this.nome = nome;
-        this.stato = false; // Di default non completato
+        this.stato = false; // Default richiesto dalla traccia
     }
 
-    /**
-     * Restituisce il nome della Checklist
-     * @return
-     */
-
-    public String getNome() {
-        return nome;
-    }
+    // --- GETTER E SETTER ---
 
     /**
-     * Imposta il nome della Checklist
-     * @param nome
-     */
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    /**
-     * Restituisce lo stato della checklist
-     * @return
-     */
-    public Boolean getStato() {
-        return stato;
-    }
-
-    /**
-     * Imposta lo stato della Checklist
-     * @param stato
-     */
-    public void setStato(Boolean stato) {
-        this.stato = stato;
-    }
-
-    /**
-     * Restituisce l id della Checklist
-     * @return
+     * Restituisce l'ID univoco della checklist.
+     * @return L'ID intero.
      */
     public Integer getIdChecklist() {
         return idChecklist;
     }
 
     /**
-     * Imposta l id della Checklist
-     * @param idChecklist
+     * Imposta l'ID della checklist.
+     * @param idChecklist Il nuovo ID.
      */
     public void setIdChecklist(Integer idChecklist) {
         this.idChecklist = idChecklist;
     }
 
     /**
-     * Restituisec l id del ToDo
-     * @return
+     * Restituisce il testo dell'attività.
+     * @return Il nome dell'attività.
+     */
+    public String getNome() {
+        return nome;
+    }
+
+    /**
+     * Imposta il testo dell'attività.
+     * @param nome Il nuovo nome.
+     */
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    /**
+     * Restituisce lo stato di completamento.
+     * @return True se completato, False altrimenti.
+     */
+    public Boolean getStato() {
+        return stato;
+    }
+
+    /**
+     * Imposta lo stato di completamento.
+     * @param stato True per completare, False per riaprire.
+     */
+    public void setStato(Boolean stato) {
+        this.stato = stato;
+    }
+
+    /**
+     * Restituisce l'ID del ToDo a cui questa attività appartiene.
+     * @return L'ID del ToDo padre.
      */
     public Integer getIdToDo() {
         return idToDo;
     }
 
     /**
-     * Imposta l id del ToDo
-     * @param idToDo
+     * Imposta l'ID del ToDo padre.
+     * @param idToDo L'ID del ToDo.
      */
     public void setIdToDo(Integer idToDo) {
         this.idToDo = idToDo;
+    }
+
+    @Override
+    public String toString() {
+        return nome + (stato ? " [X]" : " [ ]");
     }
 }
