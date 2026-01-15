@@ -8,11 +8,25 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementazione DAO per la gestione delle CheckList (sottoattività) in PostgreSQL.
+ * <p>
+ * Questa classe gestisce le operazioni CRUD sulla tabella 'checklist' del database,
+ * permettendo di salvare, recuperare, aggiornare ed eliminare le singole voci
+ * associate a un ToDo.
+ */
 public class CheckListImplementazione implements ChecklistDao {
 
+    /**
+     * Salva una nuova attività della checklist nel database.
+     * Utilizza la clausola SQL {@code RETURNING} per recuperare immediatamente
+     * l'ID generato dal database e assegnarlo all'oggetto Java.
+     *
+     * @param attivita L'oggetto CheckList da salvare (contenente nome e stato).
+     * @param idToDo   L'ID del ToDo a cui questa attività appartiene.
+     */
     @Override
     public void salvaCheckListAttivita(CheckList attivita, int idToDo) {
-        // CORREZIONE: Usiamo RETURNING per farci dare l'ID dal database
         String sql = "INSERT INTO checklist (nome, stato, idtodo) VALUES (?, ?, ?) RETURNING idchecklist";
 
         try (Connection conn = ConnessioneDatabase.getConnection();
@@ -22,14 +36,11 @@ public class CheckListImplementazione implements ChecklistDao {
             stmt.setBoolean(2, attivita.getStato());
             stmt.setInt(3, idToDo);
 
-            // Usiamo executeQuery perché ci aspettiamo un risultato (l'ID)
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    // Recuperiamo l'ID (colonna 1)
                     int idGenerato = rs.getInt(1);
                     attivita.setIdChecklist(idGenerato);
                     attivita.setIdToDo(idToDo);
-                    System.out.println("DEBUG: Checklist salvata. ID assegnato: " + idGenerato);
                 }
             }
 
@@ -39,10 +50,16 @@ public class CheckListImplementazione implements ChecklistDao {
         }
     }
 
+    /**
+     * Recupera tutte le attività della checklist associate a uno specifico ToDo.
+     * Le attività vengono restituite ordinate per ID crescente (ordine di inserimento).
+     *
+     * @param idToDo L'ID del ToDo di cui recuperare la checklist.
+     * @return Una lista di oggetti {@link CheckList}.
+     */
     @Override
     public List<CheckList> getCheckListByToDoId(int idToDo) {
         List<CheckList> lista = new ArrayList<>();
-        // Verifica se nel tuo DB la colonna si chiama idchecklist o id_checklist
         String sql = "SELECT idchecklist, nome, stato FROM checklist WHERE idtodo = ? ORDER BY idchecklist";
 
         try (Connection conn = ConnessioneDatabase.getConnection();
@@ -67,6 +84,12 @@ public class CheckListImplementazione implements ChecklistDao {
         return lista;
     }
 
+    /**
+     * Aggiorna lo stato di completamento di una singola voce della checklist.
+     *
+     * @param idCheckList L'ID dell'attività da aggiornare.
+     * @param completato  Il nuovo stato (true = completato, false = da fare).
+     */
     @Override
     public void updateStatoCheckList(int idCheckList, boolean completato) {
         String sql = "UPDATE checklist SET stato = ? WHERE idchecklist = ?";
@@ -84,6 +107,11 @@ public class CheckListImplementazione implements ChecklistDao {
         }
     }
 
+    /**
+     * Elimina definitivamente una voce della checklist dal database.
+     *
+     * @param idCheckList L'ID dell'attività da eliminare.
+     */
     @Override
     public void eliminaCheckListAttivita(int idCheckList) {
         String sql = "DELETE FROM checklist WHERE idchecklist = ?";

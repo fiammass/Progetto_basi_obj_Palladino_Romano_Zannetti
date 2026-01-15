@@ -5,14 +5,20 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 /**
- * Rappresenta un'attività ToDo all'interno del sistema.
- * Un ToDo contiene titolo, descrizione, scadenza, eventuale immagine,
- * stato di completamento e il riferimento alla bacheca e all'autore.
- * I ToDo possono essere condivisi con altri utenti, mantenendo però
- * un'unica istanza originale nel database.
+ * Rappresenta un'attività (Task) all'interno del sistema.
+ *
+ * <p>
+ * Un ToDo è l'entità principale dell'applicazione e contiene:
+ * <ul>
+ * <li>Dati descrittivi (Titolo, Descrizione, URL, Immagine).</li>
+ * <li>Dati temporali (Data di scadenza).</li>
+ * <li>Stato (Completato/Non completato).</li>
+ * <li>Dati visivi (Colore dello sfondo della card).</li>
+ * <li>Relazioni (Autore, Bacheca di appartenenza).</li>
+ * <li>Sotto-elementi (Checklist di attività e Lista di utenti condivisi).</li>
+ * </ul>
  */
 public class ToDo {
-
 
     private Integer idToDo;
     private String titolo;
@@ -20,27 +26,30 @@ public class ToDo {
     private String url;
     private String descrizione;
     private Image image;
-    private Utente autore;
-    private ArrayList<Utente> condivisioni;
+    private String imaginepath;
     private Color color;
     private Boolean completato = false;
+    private Utente autore;
     private Bacheca bacheca;
-    private String imaginepath;
+
+    private ArrayList<Utente> condivisioni;
     private ArrayList<CheckList> checklist;
 
     /**
-     * Costruttore della classe ToDo
+     * Costruttore della classe ToDo.
+     * Inizializza l'oggetto e le liste interne (condivisioni e checklist).
+     * Se viene fornita una bacheca, il ToDo si aggiunge automaticamente alla lista dei ToDo della bacheca.
      *
-     * @param titolo Il titolo del ToDo
-     * @param datescadenza La data di scadenza
-     * @param url Il link associato
-     * @param descrizione La descrizione
-     * @param image L'oggetto immagine caricato
-     * @param imaginepath Il percorso del file immagine
-     * @param color Il colore del post-it
-     * @param autore L'utente che ha creato il todo
-     * @param bacheca La bacheca di appartenenza
-     * @param completato Lo stato del task
+     * @param titolo       Il titolo del ToDo.
+     * @param datescadenza La data di scadenza (può essere null).
+     * @param url          Un link URL opzionale.
+     * @param descrizione  Una descrizione testuale.
+     * @param image        L'oggetto immagine in memoria.
+     * @param imaginepath  Il percorso del file immagine su disco.
+     * @param color        Il colore di sfondo per la visualizzazione grafica.
+     * @param autore       L'utente creatore del ToDo.
+     * @param bacheca      La bacheca a cui appartiene il ToDo.
+     * @param completato   Lo stato iniziale di completamento.
      */
     public ToDo(String titolo, LocalDate datescadenza, String url, String descrizione,
                 Image image, String imaginepath, Color color,
@@ -51,265 +60,291 @@ public class ToDo {
         this.url = url;
         this.descrizione = descrizione;
         this.image = image;
+        this.imaginepath = imaginepath;
         this.color = color;
         this.autore = autore;
-        this.condivisioni = new ArrayList<>();
         this.bacheca = bacheca;
-        this.imaginepath = imaginepath;
         this.completato = completato;
+
+        this.condivisioni = new ArrayList<>();
         this.checklist = new ArrayList<>();
 
-
-        if (bacheca != null) {
+        if (bacheca != null && bacheca.getTodos() != null) {
             bacheca.getTodos().add(this);
         }
     }
 
     /**
-     * Restituisce l'id
+     * Restituisce l'ID univoco del ToDo.
      *
-     * @return l'id
+     * @return L'ID intero.
      */
     public Integer getIdToDo() {
         return idToDo;
     }
 
     /**
-     * Restituisce il titolo
+     * Imposta l'ID univoco del ToDo (solitamente generato dal database).
      *
-     * @return il titolo
-     */
-    public String getTitolo() {
-        return titolo;
-    }
-
-    /**
-     * Restituisce la scadenza del todo
-     *
-     * @return la scadenza
-     */
-    public LocalDate getDatescadenza() {
-        return datescadenza;
-    }
-
-    /**
-     * Restituisce il link
-     *
-     * @return il link
-     */
-    public String getUrl() {
-        return url;
-    }
-
-    /**
-     * Restituisce la descrizione
-     *
-     * @return la descrizione
-     */
-    public String getDescrizione() {
-        return descrizione;
-    }
-
-    /**
-     * Restituisce l'immagine
-     *
-     * @return l'immagine
-     */
-    public Image getImage() {
-        return image;
-    }
-
-    /**
-     * Restituisce il colore
-     *
-     * @return il colore
-     */
-    public Color getColor() {
-        return color;
-    }
-
-    /**
-     * Restituisce lo stato
-     *
-     * @return lo stato
-     */
-    public Boolean getCompletato() {
-        return completato;
-    }
-
-    /**
-     * Restituisce l'elenco degli utenti con cui è condiviso il todo
-     *
-     * @return la lista degli utenti
-     */
-    public ArrayList<Utente> getCondivisioni() {
-        return condivisioni;
-    }
-
-    /**
-     * Restituisce l'autore del todo
-     *
-     * @return l'autore
-     */
-    public Utente getAutore() {
-        return autore;
-    }
-
-    /**
-     * Restituisce la bacheca dove è contenuto il todo
-     *
-     * @return la bacheca
-     */
-    public Bacheca getBacheca() {
-        return bacheca;
-    }
-
-    /**
-     * Restituisce il path dell'immagine collegata al todo
-     *
-     * @return il path dell'immagine
-     */
-    public String getImaginepath() {
-        return imaginepath;
-    }
-
-
-    public ArrayList<CheckList> getChecklist() {
-        return checklist;
-    }
-
-    public void setChecklist(ArrayList<CheckList> checklist) {
-        this.checklist = checklist;
-    }
-
-
-    public void addCheckListAttivita(CheckList attivita) {
-        this.checklist.add(attivita);
-    }
-
-    // --- SETTER ---
-
-    /**
-     * Imposta l'id del todo
-     *
-     * @param idToDo il nuovo id
+     * @param idToDo Il nuovo ID.
      */
     public void setIdToDo(Integer idToDo) {
         this.idToDo = idToDo;
     }
 
     /**
-     * Imposta il titolo del todo
+     * Restituisce il titolo del ToDo.
      *
-     * @param titolo il nuovo titolo
+     * @return La stringa del titolo.
+     */
+    public String getTitolo() {
+        return titolo;
+    }
+
+    /**
+     * Imposta il titolo del ToDo.
+     *
+     * @param titolo Il nuovo titolo.
      */
     public void setTitolo(String titolo) {
         this.titolo = titolo;
     }
 
     /**
-     * Imposta la scadenza del todo
+     * Restituisce la data di scadenza.
      *
-     * @param datescadenza la nuova scadenza
+     * @return La data di scadenza o null se non impostata.
+     */
+    public LocalDate getDatescadenza() {
+        return datescadenza;
+    }
+
+    /**
+     * Imposta la data di scadenza.
+     *
+     * @param datescadenza La nuova data.
      */
     public void setDatescadenza(LocalDate datescadenza) {
         this.datescadenza = datescadenza;
     }
 
     /**
-     * Imposta il link legato al todo
+     * Restituisce l'URL associato al ToDo.
      *
-     * @param url il nuovo link
+     * @return La stringa dell'URL.
+     */
+    public String getUrl() {
+        return url;
+    }
+
+    /**
+     * Imposta l'URL associato.
+     *
+     * @param url Il nuovo URL.
      */
     public void setUrl(String url) {
         this.url = url;
     }
 
     /**
-     * Imposta la descrizione del todo
+     * Restituisce la descrizione dettagliata.
      *
-     * @param descrizione la nuova descrizione
+     * @return La descrizione.
+     */
+    public String getDescrizione() {
+        return descrizione;
+    }
+
+    /**
+     * Imposta la descrizione.
+     *
+     * @param descrizione La nuova descrizione.
      */
     public void setDescrizione(String descrizione) {
         this.descrizione = descrizione;
     }
 
     /**
-     * Imposta l'immagine del todo
+     * Restituisce l'immagine associata.
      *
-     * @param image la nuova immagine
+     * @return L'oggetto Image.
+     */
+    public Image getImage() {
+        return image;
+    }
+
+    /**
+     * Imposta l'immagine associata.
+     *
+     * @param image La nuova immagine.
      */
     public void setImage(Image image) {
         this.image = image;
     }
 
     /**
-     * Imposta il path dell'immagine del todo
+     * Restituisce il percorso su disco dell'immagine.
      *
-     * @param imaginepath il nuovo path
+     * @return Il percorso come stringa.
+     */
+    public String getImaginepath() {
+        return imaginepath;
+    }
+
+    /**
+     * Imposta il percorso dell'immagine.
+     *
+     * @param imaginepath Il nuovo percorso.
      */
     public void setImaginepath(String imaginepath) {
         this.imaginepath = imaginepath;
     }
 
     /**
-     * Imposta il colore del todo
+     * Restituisce il colore di sfondo preferito per la visualizzazione.
      *
-     * @param color il nuovo colore
+     * @return L'oggetto Color.
+     */
+    public Color getColor() {
+        return color;
+    }
+
+    /**
+     * Imposta il colore di sfondo.
+     *
+     * @param color Il nuovo colore.
      */
     public void setColor(Color color) {
         this.color = color;
     }
 
     /**
-     * Imposta la bacheca del todo
+     * Restituisce lo stato di completamento del ToDo.
      *
-     * @param bacheca la nuova bacheca
+     * @return true se completato, false altrimenti.
      */
-    public void setBacheca(Bacheca bacheca) {
-        this.bacheca = bacheca;
+    public Boolean getCompletato() {
+        return completato;
     }
 
     /**
-     * Imposta lo stato del todo
+     * Imposta lo stato di completamento.
      *
-     * @param completato il nuovo stato
+     * @param completato Il nuovo stato.
      */
     public void setCompletato(Boolean completato) {
         this.completato = completato;
     }
 
     /**
-     * Imposta l'autore del todo
+     * Restituisce l'autore (proprietario) del ToDo.
      *
-     * @param autore il nuovo autore
+     * @return L'oggetto Utente autore.
+     */
+    public Utente getAutore() {
+        return autore;
+    }
+
+    /**
+     * Imposta l'autore del ToDo.
+     *
+     * @param autore Il nuovo autore.
      */
     public void setAutore(Utente autore) {
         this.autore = autore;
     }
 
     /**
-     * Imposta la lista delle condivisioni
-     * @param condivisioni la nuova lista
+     * Restituisce la bacheca in cui è contenuto il ToDo.
+     *
+     * @return L'oggetto Bacheca.
+     */
+    public Bacheca getBacheca() {
+        return bacheca;
+    }
+
+    /**
+     * Imposta la bacheca di appartenenza.
+     *
+     * @param bacheca La nuova bacheca.
+     */
+    public void setBacheca(Bacheca bacheca) {
+        this.bacheca = bacheca;
+    }
+
+    /**
+     * Restituisce la lista degli utenti con cui questo ToDo è condiviso.
+     *
+     * @return Una lista di oggetti Utente.
+     */
+    public ArrayList<Utente> getCondivisioni() {
+        return condivisioni;
+    }
+
+    /**
+     * Imposta la lista degli utenti condivisi.
+     *
+     * @param condivisioni La nuova lista di condivisioni.
      */
     public void setCondivisioni(ArrayList<Utente> condivisioni) {
         this.condivisioni = condivisioni;
     }
 
-    @Override
-    public String toString() {
-        return getTitolo();
+    /**
+     * Restituisce la lista delle sotto-attività (Checklist).
+     *
+     * @return Una lista di oggetti CheckList.
+     */
+    public ArrayList<CheckList> getChecklist() {
+        return checklist;
     }
+
+    /**
+     * Imposta la lista delle sotto-attività.
+     *
+     * @param checklist La nuova lista checklist.
+     */
+    public void setChecklist(ArrayList<CheckList> checklist) {
+        this.checklist = checklist;
+    }
+
+    /**
+     * Aggiunge una singola attività alla checklist esistente.
+     *
+     * @param attivita L'attività da aggiungere.
+     */
+    public void addCheckListAttivita(CheckList attivita) {
+        if (this.checklist == null) {
+            this.checklist = new ArrayList<>();
+        }
+        this.checklist.add(attivita);
+    }
+
+    /**
+     * Verifica lo stato della checklist interna.
+     * Se tutte le voci della checklist sono contrassegnate come completate,
+     * imposta automaticamente lo stato del ToDo principale come completato.
+     */
     public void verificaECompletaToDo() {
         if (this.checklist == null || this.checklist.isEmpty()) {
             return;
         }
         boolean tutteCompletate = this.checklist.stream()
-                .allMatch(CheckList::getStato); // True se tutti sono true
+                .allMatch(CheckList::getStato);
 
         if (tutteCompletate && !this.completato) {
             this.setCompletato(true);
-
         }
+    }
+
+    /**
+     * Restituisce una rappresentazione stringa dell'oggetto, corrispondente al titolo.
+     * Utile per debug o visualizzazione in liste semplici.
+     *
+     * @return Il titolo del ToDo.
+     */
+    @Override
+    public String toString() {
+        return getTitolo();
     }
 }

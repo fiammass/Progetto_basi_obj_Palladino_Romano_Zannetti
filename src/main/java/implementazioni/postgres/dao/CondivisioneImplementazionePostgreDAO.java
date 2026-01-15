@@ -12,20 +12,23 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
- * Implementazione DAO per la gestione delle Condivisioni in PostgreSQL.
- * Fornisce metodi per aggiungere, eliminare per utente ,recuperare l ultente condiviso , eliminare per bahchea.
+ * Implementazione DAO per la gestione delle Condivisioni su database PostgreSQL.
+ * <p>
+ * Questa classe gestisce la tabella di relazione 'condivisi' (molti-a-molti),
+ * che collega i ToDo agli utenti che hanno il permesso di visualizzarli.
  */
 public class CondivisioneImplementazionePostgreDAO implements CondivisioneDAO {
 
-    // DIPENDENZA: UtenteDAO è necessario per caricare i dettagli degli utenti condivisi
     private UtenteDao utenteDAO = new UtenteImplementazione();
 
     /**
-     * Metodo per aggiungere una condivisione di un Todo
-     * @param idToDo ID del ToDo da condividere.
-     * @param loginDestinatario Login dell'utente che riceve la condivisione.
+     * Aggiunge un record di condivisione nel database.
+     * Se la condivisione esiste già (chiave duplicata), l'eccezione viene gestita
+     * stampando un messaggio di log senza interrompere l'esecuzione.
+     *
+     * @param idToDo            L'ID del ToDo da condividere.
+     * @param loginDestinatario Lo username dell'utente con cui condividere il ToDo.
      */
     @Override
     public void aggiungiCondivisione(int idToDo, String loginDestinatario) {
@@ -36,19 +39,19 @@ public class CondivisioneImplementazionePostgreDAO implements CondivisioneDAO {
 
             stmt.setInt(1, idToDo);
             stmt.setString(2, loginDestinatario);
-
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            System.err.println("Errore nell'aggiungere la condivisione per " + loginDestinatario);
-            e.printStackTrace();
+            System.err.println("Info: Condivisione già esistente o errore SQL: " + e.getMessage());
         }
     }
 
     /**
-     * Metodo per eliminare una condivisone specifica per un Utente
-      * @param idToDo ID del ToDo.
-     * @param loginDestinatario Login dell'utente destinatario.
+     * Rimuove una specifica condivisione dal database.
+     * L'utente indicato non vedrà più il ToDo nella propria bacheca.
+     *
+     * @param idToDo            L'ID del ToDo.
+     * @param loginDestinatario Lo username dell'utente da rimuovere.
      */
     @Override
     public void eliminaCondivisionePerUtente(int idToDo, String loginDestinatario) {
@@ -59,24 +62,23 @@ public class CondivisioneImplementazionePostgreDAO implements CondivisioneDAO {
 
             stmt.setInt(1, idToDo);
             stmt.setString(2, loginDestinatario);
-
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            System.err.println("Errore nell'eliminare la condivisione per " + loginDestinatario);
             e.printStackTrace();
         }
     }
 
     /**
-     * Metodo per recuperare gli utenteni condivisi da uno specifico Todo
-      * @param idToDo ID del ToDo.
-     * @return
+     * Recupera la lista completa degli utenti con cui un determinato ToDo è condiviso.
+     * Utilizza {@link UtenteDao} per recuperare i dettagli completi di ogni utente trovato.
+     *
+     * @param idToDo L'ID del ToDo di cui cercare le condivisioni.
+     * @return Una lista di oggetti {@link Utente}.
      */
     @Override
     public List<Utente> getUtentiCondivisi(int idToDo) {
         List<Utente> utenti = new ArrayList<>();
-        // Query per recuperare tutti i login dalla tabella condivisi
         String sql = "SELECT login_condiviso FROM condivisi WHERE idtodo = ?";
 
         try (Connection conn = ConnessioneDatabase.getConnection();
@@ -87,7 +89,6 @@ public class CondivisioneImplementazionePostgreDAO implements CondivisioneDAO {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     String login = rs.getString("login_condiviso");
-                    // Riusa il metodo di UtenteDAO per recuperare l'oggetto Utente completo
                     Utente utente = utenteDAO.getUtentebyUsername(login);
                     if (utente != null) {
                         utenti.add(utente);
@@ -95,30 +96,25 @@ public class CondivisioneImplementazionePostgreDAO implements CondivisioneDAO {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Errore nel recupero degli utenti condivisi per ToDo ID: " + idToDo);
             e.printStackTrace();
         }
         return utenti;
     }
 
     /**
-     * Metodo per eliminare la condivisione di una bahcheca
-     * @param idBacheca ID della Bacheca.
+     * Elimina tutte le condivisioni associate a tutti i ToDo di una specifica bacheca.
+     * Utile per la pulizia dei dati quando una bacheca viene eliminata.
+     *
+     * @param idBacheca L'ID della bacheca.
      */
+    @Override
     public void eliminaCondivisioniDellaBacheca(int idBacheca) {
-        // Query complessa che trova tutti i ToDo in una bacheca ed elimina i relativi record di condivisione
         String sql = "DELETE FROM condivisi c USING todo t WHERE c.idtodo = t.idtodo AND t.idba = ?";
-
         try (Connection conn = ConnessioneDatabase.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setInt(1, idBacheca);
-
-            int righeEliminate = stmt.executeUpdate();
-            System.out.println("Eliminate " + righeEliminate + " condivisioni per la bacheca " + idBacheca);
-
+            stmt.executeUpdate();
         } catch (SQLException e) {
-            System.err.println("Errore nell'eliminare le condivisioni per la Bacheca ID: " + idBacheca);
             e.printStackTrace();
         }
     }
