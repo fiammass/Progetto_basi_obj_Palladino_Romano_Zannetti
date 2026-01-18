@@ -26,7 +26,7 @@ public class BachecaImplementazione implements BachecaDao {
      */
     @Override
     public void updateBacheca(Bacheca bacheca, int idBacheca) {
-        // CORRETTO: "bahceca" -> "bacheca" e "id" -> "idbacheca"
+
         String sql = "UPDATE bacheca SET titolo = ?, descrizione = ? WHERE idbacheca = ?";
 
         try (Connection conn = ConnessioneDatabase.getConnection();

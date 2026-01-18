@@ -11,7 +11,7 @@ import model.Utente;
 
 public interface UtenteDao {
 
-    /**
+    /**)
      * Registra un nuovo utente all interno del database.
      * @param utente
      */
